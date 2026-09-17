@@ -1,5 +1,3 @@
-<img width="1147" height="1006" alt="WhatsApp Image 2026-09-16 at 14 13 29 (1)" src="https://github.com/user-attachments/assets/4fe98946-5d33-4cfd-a638-c371b63ae2f2" /><img width="1284" height="1014" alt="WhatsApp Image 2026-09-16 at 11 38 54" src="https://github.com/user-attachments/assets/cf5e4143-1a97-4132-9e65-432ae6cd33eb" /><img width="1600" height="849" alt="WhatsApp Image 2026-09-16 at 08 48 24" src="https://github.com/user-attachments/assets/664559d5-c2a8-4ab1-b741-6a366c38843d" /><img width="1600" height="849" alt="WhatsApp Image 2026-09-16 at 08 48 24" src="https://github.com/user-attachments/assets/7f28f806-abcf-4168-b2f2-fb0bc05b317b" /><img width="1600" height="898" alt="WhatsApp Image 2026-09-15 at 16 28 08" src="https://github.com/user-attachments/assets/9d6c11fe-2df5-4c71-85fe-c48caefa9b61" /><img width="1600" height="899" alt="WhatsApp Image 2026-09-15 at 16 27 35" src="https://github.com/user-attachments/assets/7c2f3af7-c479-4398-a364-56ef6405d6ca" />﻿# Jarkom-Modul-1-2026-K-28
-
 ## Kelompok K-28
 
 | Nama | NRP |
