@@ -186,6 +186,7 @@ sysctl -w net.ipv4.ip_forward=1
 cat /proc/sys/net/ipv4/ip_forward
 ```
 Hasil:
+
 <img width="377" height="65" alt="image" src="https://github.com/user-attachments/assets/71a0a559-9466-49e0-8c66-58094f0045e2" />
 
 jika hasilnya `1` → sudah aktif dan siap meneruskan traffic antar subnet.
