@@ -806,7 +806,7 @@ Dengan filter `ftp or ftp-data` masih aktif, cari:
 Klik kedua paket ini, expand bagian *File Transfer Protocol (FTP)* di Packet Details.
 
 
-###### Hentikan & simpan capture**
+###### Hentikan & simpan capture
 
 1. Klik kanan kabel yang sama di GNS3 → **Stop capture**
 2. Di Wireshark: **File → Save As**, simpan dengan nama jelas, misal:
@@ -818,6 +818,95 @@ soal 10
 
 Untuk mengirim ping dari node Knights ke node Chisa dengan payload 128 bytes, interval 0.3 detik, sebanyak 77 paket (ping -c 77 -s 128 -i 0.3 <IP_Chisa>), lalu menganalisis di Wireshark nilai ICMP Type/Code untuk Echo Request vs Echo Reply, serta packet loss dan RTT (min/avg/max).
 
+**Step 1: Cari IP Chisa**
+
+Di konsol Chisa:
+```
+ip -br a
+```
+Catat IP eth0-nya (misal `192.225.2.2`).
+
+---
+
+**Step 2: Nyalakan Wireshark**
+
+Sama seperti soal sebelumnya:
+1. Klik kanan kabel **Knights ↔ Switch3** di GNS3
+2. **Start capture** → centang visualisasi → OK
+3. Di kolom filter, ketik:
+   ```
+   icmp
+   ```
+
+---
+
+**Step 3: Jalankan ping dari Knights**
+
+Di konsol Knights (ganti IP sesuai Chisa):
+```
+ping -c 77 -s 128 -i 0.3 192.225.2.2
+```
+Tunggu sampai selesai (sekitar 23 detik). **Jangan tutup terminalnya** — biarkan output statistiknya tetap kelihatan buat screenshot.
+
+---
+
+**Step 4: Baca hasil di terminal (packet loss & RTT)**
+
+Cari 2 baris di bagian bawah output:
+```
+--- 192.225.2.2 ping statistics ---
+77 packets transmitted, 77 received, 0% packet loss, time xxxx ms
+rtt min/avg/max/mdev = x.xxx/x.xxx/x.xxx/x.xxx ms
+```
+- **Packet loss** → lihat persentase di baris pertama
+- **RTT min/avg/max** → 3 angka pertama di baris kedua
+
+Screenshot output ini utuh.
+
+---
+
+**Step 5: Baca ICMP Type & Code di Wireshark**
+
+Dengan filter `icmp` masih aktif, klik salah satu paket **Echo Request** (Knights → Chisa), expand bagian *Internet Control Message Protocol*, akan terlihat:
+```
+Type: 8 (Echo request)
+Code: 0
+```
+Klik paket **balasannya** (Echo Reply, Chisa → Knights, biasanya baris berikutnya):
+```
+Type: 0 (Echo reply)
+Code: 0
+```
+
+**Ringkasan buat laporan:**
+| Arah | Type | Code |
+|---|---|---|
+| Request (Knights → Chisa) | 8 | 0 |
+| Reply (Chisa → Knights) | 0 | 0 |
+
+---
+
+**Step 6: Cek ukuran paket sesuai `-s 128`**
+
+Klik salah satu Echo Request, lihat kolom **Length** di Packet List (atau expand bagian **Data** di ICMP) — payload-nya sekitar 128 bytes (total frame lebih besar karena ada header Ethernet+IP+ICMP di depannya, itu wajar).
+
+---
+
+**Step 7: Kumpulkan 3 screenshot**
+1. Output terminal ping lengkap (command + statistik RTT & packet loss)
+2. Paket Echo Request di Wireshark (Type: 8, Code: 0)
+3. Paket Echo Reply di Wireshark (Type: 0, Code: 0)
+
+---
+###### Hentikan & simpan capture
+
+1. Klik kanan kabel yang sama di GNS3 → **Stop capture**
+2. Di Wireshark: **File → Save As**, simpan dengan nama jelas, misal:
+   ```
+   soal10-knights-ping-chisa.pcapng`
+   ```
+
+   
 soal 11
 
 Untuk membuktikan kelemahan protokol Telnet dengan membuat akun phantom_user/wired_ghost di telnetd node Chisa, login dari node Eiri, menangkap sesi dengan Wireshark, menunjukkan kredensial plain text lewat Follow TCP Stream, serta menjelaskan mengapa tiap karakter terkirim dalam paket TCP terpisah.
