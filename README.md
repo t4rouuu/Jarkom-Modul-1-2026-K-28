@@ -820,6 +820,14 @@ cat protocol7_manifesto.txt
 
 Pastikan isinya sama persis dengan yang di server.
 
+Catatan Persistence:
+File protocol7_manifesto.txt dan signal_alice.txt sudah dimasukkan ke
+script /root/setup_ftp.sh (bagian restore otomatis), jadi kalau node
+Chisa di-restart, tinggal jalankan:
+    /root/setup_ftp.sh
+File-file itu akan otomatis ter-copy ulang ke /var/wired/data dengan
+permission yang benar (644).
+
 ###### Mika coba upload (harus GAGAL)
 
 Buat file dummy dulu:
