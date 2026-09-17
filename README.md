@@ -1,4 +1,4 @@
-<img width="1600" height="899" alt="WhatsApp Image 2026-09-15 at 14 16 41" src="https://github.com/user-attachments/assets/597169a2-d636-486d-9117-35a4db074101" />﻿# Jarkom-Modul-1-2026-K-28
+﻿# Jarkom-Modul-1-2026-K-28
 
 ## Kelompok K-28
 
