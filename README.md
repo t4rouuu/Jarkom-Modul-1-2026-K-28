@@ -13,7 +13,7 @@ Untuk mempersiapkan pembangunan The Wired, kita membangun topologi jaringan The 
 
 ##### Bangun Topologi:
 
-###### 1. Menyiapkan nodenya
+###### Menyiapkan nodenya
 
 Tarik ke workspace GNS3:
 - 1 Router (kasih 4 adapter/interface)
@@ -21,24 +21,24 @@ Tarik ke workspace GNS3:
 - 3 Switch (Ethernet switch)
 - 5 Client (1 adapter aja tiap client)
 
-###### 2. Memberikan nama sesuai soal
+###### Memberikan nama sesuai soal
 
 Rename semua node sesuai perannya:
 
 `Router-Lain`, `Switch1`, `Switch2`, `Switch3`, `Alice`, `Mika`, `Chisa`, `Knights`, `Eiri`
 
-###### 3. Menyambungkan kabelnya
+###### Menyambungkan kabelnya
 
 - NAT → Router-Lain (di eth0)
 - Switch1 → Router-Lain (di eth1), lalu Switch1 → Alice, dan Switch1 → Mika
 - Switch2 → Router-Lain (di eth2), lalu Switch2 → Chisa
 - Switch3 → Router-Lain (di eth3), lalu Switch3 → Knights, dan Switch3 → Eiri
 
-###### 4. Menyeting IP di tiap node
+###### Menyeting IP di tiap node
 
 Edit file `/etc/network/interfaces` di setiap node sesuai IP yang sudah ditentukan. Contoh settingan Router-Lain ada di Modul Fase 2, dan contoh settingan Client polanya sama seperti di modul bagian 2.7.2  tinggal disesuaikan IP dan interfacenya saja.
 
-###### 5. Menguji coba
+###### Menguji coba
 Menyalakan semua node, lalu di tiap node ketik:
 
 ```
@@ -51,11 +51,13 @@ Hasil:
 
 <img width="665" height="377" alt="image" src="https://github.com/user-attachments/assets/d289a71c-f67c-45d4-b5b6-1f59de580895" />
 
+---
+
 ### soal 2
 
 Untuk menghubungkan Router Lain ke jaringan internet publik melalui NAT/DHCP pada interface eth0, karena The Wired saat itu masih terisolasi dari dunia luar.
 
-###### 1. Mengedit file konfigurasi
+###### Mengedit file konfigurasi
 
 Buka file `/etc/network/interfaces` di Router-Lain, lalu isi seperti ini:
 
@@ -141,11 +143,11 @@ iface eth0 inet static
 ```
 <img width="959" height="234" alt="image" src="https://github.com/user-attachments/assets/1f7372be-50cd-4b09-aca5-483fe6d3466a" />
 
-###### 2. Merestart networking / reboot node
+###### Merestart networking / reboot node
 
 agar konfigurasi di jalankan.
 
-###### 3. Tes koneksi internet
+###### Tes koneksi internet
 
 Di konsol Router-Lain, ketik:
 
@@ -165,11 +167,12 @@ ping -c 3 8.8.8.8
 
 jika gagal (`Destination unreachable` atau `100% packet loss`), kemungkinan masalah di NAT node atau eth0 belum dapat IP cek dengan `ip a` di eth0 dulu.
 
+---
 ### soal 3
 
 Untuk memastikan seluruh Entitas (Client) di bawah Switch 1, Switch 2, dan Switch 3 dapat saling terhubung dan berkomunikasi satu sama lain, dengan mengkonfigurasi routing pada Router Lain setelah router tersebut terhubung ke internet.
 
-###### 1. Mengaktifkan IP forwarding
+###### Mengaktifkan IP forwarding
 
 Di konsol Router-Lain, ketik:
 
@@ -177,7 +180,7 @@ Di konsol Router-Lain, ketik:
 sysctl -w net.ipv4.ip_forward=1
 ```
 
-###### 2. Memastikan sudah aktif 
+###### Memastikan sudah aktif 
 
 ```
 cat /proc/sys/net/ipv4/ip_forward
@@ -186,9 +189,10 @@ Hasil:
 <img width="377" height="65" alt="image" src="https://github.com/user-attachments/assets/71a0a559-9466-49e0-8c66-58094f0045e2" />
 
 jika hasilnya `1` → sudah aktif dan siap meneruskan traffic antar subnet.
+
 jika hasilnya `0` → berarti belum berhasil, ulangi langkah 1.
 
-###### 3. Tes koneksi antar Entitas
+###### Tes koneksi antar Entitas
 
 Coba ping dari satu client ke client lain, contoh:
 - **Alice → Mika** (masih satu Switch, Switch1)
@@ -206,15 +210,18 @@ Hasil:
 
 <img width="347" height="284" alt="image" src="https://github.com/user-attachments/assets/e607c539-2a26-4df8-9701-5c35e7b2a31e" />
 
-**Hasil yang diharapkan:** Semua client bisa saling ping (0% packet loss), baik yang satu switch maupun beda switch — tandanya routing dan forwarding di Router-Lain sudah jalan dengan benar.
+**Hasil yang diharapkan:** 
 
+Semua client bisa saling ping (0% packet loss), baik yang satu switch maupun beda switch — tandanya routing dan forwarding di Router-Lain sudah jalan dengan benar.
+
+---
 ### soal 4
 
 Untuk mengkonfigurasi firewall/iptables (NAT Masquerade) dan DNS resolver di Router Lain, agar setiap Entitas (Client) dapat terhubung ke internet secara mandiri dibuktikan dengan bisa ping ke 8.8.8.8 dan membuka domain google.com.
 
 Supaya semua Client (Alice, Mika, Chisa, Knights, Eiri) bisa akses internet **sendiri-sendiri** lewat Router-Lain, bukan cuma Router-Lain doang yang online.
 
-###### 1. Menyetting NAT & Firewall di Router-Lain**
+###### Menyetting NAT & Firewall di Router-Lain
 
 Ketik perintah-perintah ini di konsol Router-Lain:
 
@@ -235,7 +242,7 @@ iptables -A FORWARD -i eth0 -m state --state ESTABLISHED,RELATED -j ACCEPT
 
 *(Kalau baris terakhir gak ada, Client bisa kirim request keluar tapi gak akan pernah terima balasannya)*
 
-###### 2. Menyetting DNS di tiap Client
+###### Menyetting DNS di tiap Client
 
 Di setiap node Client (Alice, Mika, Chisa, Knights, Eiri), ketik:
 
@@ -245,7 +252,7 @@ echo "nameserver 8.8.8.8" > /etc/resolv.conf
 
 Ini membuat Client tahu ke mana harus "bertanya" kalau mau translate nama domain (misal `google.com`) jadi IP address.
 
-###### 3 Tes dari tiap Client
+###### Tes dari tiap Client
 
 Di konsol masing-masing Client, coba:
 ```
@@ -281,11 +288,12 @@ Hasil:
 ###### Eiri
 <img width="959" height="448" alt="image" src="https://github.com/user-attachments/assets/f2a3b925-8ccd-4e47-8290-578c7b51af8a" />
 
-soal 5
+---
+### soal 5
 
 Untuk memastikan seluruh konfigurasi jaringan tetap tersimpan (persisten) meskipun semua node di-restart, serta membuat script verifikasi `/root/cek_status.sh` di Router Lain yang menampilkan ringkasan interface (`ip -br a`) dan status tabel NAT (`iptables -t nat -L -v -n`) setelah reboot.
 
-###### 1. memindahkan config NAT/forwarding ke file interfaces (Router-Lain)
+###### Memindahkan config NAT/forwarding ke file interfaces (Router-Lain)
 
 Edit `/etc/network/interfaces` di Router-Lain, ubah bagian eth0 jadi seperti ini (tambahkan baris `up`):
 
@@ -302,7 +310,7 @@ iface eth0 inet dhcp
 
 **Cara kerjanya:** Baris `up` itu artinya "jalankan perintah ini otomatis setiap kali interface eth0 dinyalakan" jadi walau node di-restart, semua setting NAT & forwarding akan otomatis terpasang lagi tanpa perlu diketik manual.
 
-###### 2. Memindahkan config DNS ke file interfaces (di tiap Client)
+###### Memindahkan config DNS ke file interfaces (di tiap Client)
 
 Di file `/etc/network/interfaces` masing-masing Client (Alice, Mika, Chisa, Knights, Eiri), tambahkan baris `up` untuk DNS-nya juga:
 
@@ -312,7 +320,7 @@ up echo "nameserver 8.8.8.8" > /etc/resolv.conf
 
 Jadi DNS resolvernya gak akan hilang meski Client di-restart.
 
-###### 3. Membuat script verifikasi otomatis
+###### Membuat script verifikasi otomatis
 
 Di konsol Router-Lain, ketik:
 
@@ -335,14 +343,16 @@ chmod +x /root/cek_status.sh
 
 *(Script ini aman disimpan agar tidak ikut hilang saat container restart)*
 
-###### 4. Tes persistensi
+###### Tes persistensi
 
 1. **Restart** node Router-Lain (dan Client-nya)
 2. Setelah nyala lagi, jalankan:
    ```
    /root/cek_status.sh
    ```
-3. **Hasil yang diharapkan:** IP address di semua interface masih terpasang, dan aturan NAT (MASQUERADE) masih muncul di tabel — tandanya konfigurasi berhasil **bertahan** meski sempat di-restart.
+3. **Hasil yang diharapkan:**
+
+IP address di semua interface masih terpasang, dan aturan NAT (MASQUERADE) masih muncul di tabel — tandanya konfigurasi berhasil **bertahan** meski sempat di-restart.
    
 masukkan foto
 
