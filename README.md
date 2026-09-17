@@ -29,7 +29,7 @@ untuk memastikan seluruh konfigurasi jaringan tetap tersimpan (persisten) meskip
 
 soal 6
 
-untuk menjalankan traffic generator (dari link file) pada node Mika, lalu melakukan packet sniffing dengan Wireshark di interface node Mika menggunakan display filter khusus untuk protokol DNS atau ICMP, serta menunjukkan screenshot hasil filter beserta ringkasan paket yang lolos.
+Menyuruh kita untuk menjalankan traffic generator ([link](https://drive.google.com/drive/folders/1ZjFvWIjvAQAjE9pPthm7V_bGyaSt93lY?usp=sharing)) pada node Mika, lalu sniffing dengan Wireshark memakai filter DNS/ICMP, serta menunjukkan screenshot hasil filter beserta ringkasannya.
 
 soal 7
 soal 8
