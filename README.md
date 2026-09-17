@@ -550,6 +550,9 @@ lftp> put signal_alice.txt
 
 ➡️ Harus **berhasil**. Cek juga bisa `ls`.
 
+<img width="793" height="138" alt="WhatsApp Image 2026-09-15 at 13 29 41" src="https://github.com/user-attachments/assets/2dbcb196-6cc7-41bc-af52-3f99baf27278" />
+
+
 ###### B. Test Mika (harus bisa read, tapi GAGAL saat write)
 
 ```
@@ -562,7 +565,9 @@ Login `mika`, coba:
 lftp> put test_mika.txt
 ```
 
-➡️ Harus muncul error **"Permission denied"** atau kode **553** → screenshot ini sebagai bukti read-only.
+<img width="587" height="129" alt="WhatsApp Image 2026-09-15 at 13 40 30" src="https://github.com/user-attachments/assets/e5c38fd2-82e7-4a96-be61-34048200ef37" />
+
+➡️ Harus muncul error **"Permission denied"** atau kode **550** → screenshot ini sebagai bukti read-only.
 Coba juga `ls` atau `get` file — ini harus tetap **berhasil** (buktikan read masih jalan).
 
 ###### C. Test Eiri (harus ditolak total, bahkan sebelum masuk)
@@ -571,6 +576,8 @@ Coba juga `ls` atau `get` file — ini harus tetap **berhasil** (buktikan read m
 lftp [IP_CHISA]
 ```
 Masukkan username `eiri` → harus langsung muncul penolakan seperti **"530 Permission denied"** → screenshot ini sebagai bukti blacklist berhasil.
+
+<img width="446" height="95" alt="WhatsApp Image 2026-09-15 at 13 41 52" src="https://github.com/user-attachments/assets/b9852802-2f2d-411c-bb6d-15182626f71b" />
 
 ---
 soal 8
