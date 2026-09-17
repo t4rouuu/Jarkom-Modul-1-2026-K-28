@@ -1412,17 +1412,355 @@ Klik kanan salah satu paket SSH → **Follow → TCP Stream**. Bandingkan dengan
 ```
 ---
 
-soal 14
+### soal 14
 
 Untuk menganalisis file capture `wired_bruteforce.pcapng` ([link](https://drive.google.com/drive/folders/1-MloxOyGauBYglc6TKTQ84VeILvJjjG2?usp=sharing)) guna menemukan IP penyerang, target IP & port yang diserang, password `lain_admin` yang berhasil ditembus, serta web server software & versinya — lalu validasi temuan lewat `nc [IP_Group] 3401`.
 
+
+**Step 1: Buka file capture di Wireshark**
+
+Buka aplikasi Wireshark, lalu:
+```
+File → Open → pilih wired_bruteforce.pcapng
+```
+Tunggu sampai semua paket termuat di Packet List Pane.
+
+---
+
+**Step 2: Filter semua percobaan login (POST request)**
+
+Di kolom display filter bagian atas, ketik:
+```
+http.request.method == "POST"
+```
+Tekan Enter. Wireshark akan menyaring dan hanya menampilkan paket-paket **request POST** — ini adalah semua percobaan login yang dikirim penyerang ke `/login.php`. Kalau brute-force-nya besar, di sini akan terlihat puluhan/ratusan baris paket serupa.
+
+*(Opsional, biar lebih spesifik: tambahkan `and ip.addr==172.26.7.50` untuk fokus hanya ke traffic dari IP penyerang)*
+
+---
+
+**Step 3: Cari percobaan yang berhasil (respons 200 OK)**
+
+Klik salah satu paket POST di Packet List, lalu:
+1. Klik kanan paket tersebut
+2. Pilih **Follow → HTTP Stream** (atau **Follow → TCP Stream** kalau versi Wireshark tidak punya opsi HTTP Stream)
+
+Jendela baru akan terbuka menampilkan pasangan request-response lengkap dalam satu tampilan. Karena brute-force biasanya banyak percobaan, kamu perlu **cek stream satu-per-satu** (ada tombol navigasi "Stream" di pojok kanan bawah jendela Follow, klik panah untuk pindah ke stream berikutnya) sampai ketemu yang responsnya:
+```
+HTTP/1.1 200 OK
+```
+bukan:
+```
+HTTP/1.1 401 Unauthorized
+```
+
+Di stream yang berhasil ini, kamu akan melihat body request-nya berisi username & password yang berhasil menembus login — screenshot jendela Follow Stream ini sebagai bukti utama.
+
+**Cara lebih cepat (opsional):** ketik filter khusus untuk langsung lompat ke respons sukses:
+```
+http.response.code == 200
+```
+Klik paket yang muncul, lalu klik kanan → Follow → HTTP Stream untuk lihat pasangan request-nya.
+
+---
+
+**Step 4: Cari versi web server dari response header**
+
+Ganti filter jadi:
+```
+http.response
+```
+Ini akan menampilkan semua paket **balasan dari server** (baik yang 200 maupun 401 — keduanya biasanya mengirim header `Server` yang sama).
+
+Klik salah satu paket respons, lalu di Packet Details Pane, expand bagian:
+```
+Hypertext Transfer Protocol
+```
+Cari baris:
+```
+Server: Apache/2.4.62
+```
+Ini menunjukkan software dan versi web server yang dipakai target. Kalau ada, catat juga baris `X-Powered-By` (biasanya menunjukkan versi bahasa pemrograman backend, misal PHP).
+
+Screenshot Packet Details Pane ini dengan bagian HTTP ter-expand supaya baris `Server:` kelihatan jelas.
+
+---
+
+**Step 5: Buktikan pola brute-force (banyak percobaan gagal)**
+
+Ganti filter jadi:
+```
+http.response.code == 401
+```
+Wireshark akan menampilkan **hanya** paket-paket dengan respons gagal (Unauthorized). Kalau brute-force-nya intensif, di sini akan terlihat jumlah paket yang banyak dan berurutan — ini bukti visual bahwa penyerang mencoba banyak kombinasi kredensial secara berulang sebelum akhirnya berhasil.
+
+Screenshot Packet List Pane ini (dengan filter `http.response.code == 401` kelihatan di kolom filter) untuk menunjukkan volume percobaan gagalnya.
+
+*(Tips tambahan: klik menu Statistics → Protocol Hierarchy atau Statistics → Conversations untuk melihat total jumlah request POST yang terkirim — ini bisa jadi angka pendukung di laporan, misal "56 percobaan sebelum berhasil")*
+
+---
+
+**Ringkasan screenshot yang perlu dikumpulkan:**
+1. Packet List dengan filter `http.request.method == "POST"` aktif
+2. Follow HTTP/TCP Stream yang menunjukkan request+response **200 OK** berisi kredensial berhasil
+3. Packet Details dengan header `Server: Apache/2.4.62` ter-expand
+4. Packet List dengan filter `http.response.code == 401` menunjukkan banyaknya percobaan gagal
+
+Step selanjutnya — validasi ke socket server:
+
+nc [IP_Group] 3401
+
+Socket ini akan menanyakan beberapa field satu per satu (IP penyerang, IP:port target, password, versi server). Jalankan dulu, lalu muncul di layar prompt pertanyaannya.
+
+**Hasil Analisis file `wired_bruteforce.pcapng`:**
+
+| Yang dicari | Jawaban |
+|---|---|
+| **IP Penyerang (Eiri)** | `172.26.7.50` |
+| **IP Target (Alice)** | `172.26.7.100` |
+| **Port yang diserang** | `8080` |
+| **Tool serangan** | `ffuf` (Fuzz Faster U Fool) — terlihat di User-Agent |
+| **Endpoint diserang** | `/login.php` (method POST) |
+| **Username berhasil** | `lain_admin` |
+| **Password berhasil** | `wired_pr0tocol_7` |
+| **Web server & versi** | `Apache/2.4.62` |
+| **Info tambahan** | `X-Powered-By: PHP/8.3.14` |
+
+screenshot Bukti:
+
+----
 soal 15
 
 Untuk menganalisis file capture `wired_usb_hid.pcap` ([link](https://drive.google.com/drive/folders/1oAPzN9IEN0264_LlvGnl_CsIiYh-Hp8w?usp=drive_link)) guna menemukan Vendor ID & Product ID perangkat USB, nomor device USB, serta pesan rahasia yang dicuri dari keystroke — lalu validasi temuan lewat `nc [IP_Group] 3402`.
 
+## Step 1 — Buka file di Wireshark
+
+1. Download file `soal15_wired_usb_hid.pcap` ke komputer kamu (kalau belum ada).
+2. Buka Wireshark → **File → Open** → pilih file itu.
+
+Kamu akan lihat daftar paket USB — ini beda dari capture jaringan biasa (Ethernet), soalnya ini nyadap komunikasi antara komputer dan perangkat USB.
+
+## Step 2 — Cari Vendor ID & Product ID (deskriptor device)
+
+1. Di kolom filter Wireshark, ketik:
+```
+usb.idVendor
+```
+Tekan Enter. Ini akan nyaring cuma paket yang berisi deskriptor device (paket awal-awal biasanya, pas device pertama kali dikenali/enumerasi).
+
+2. Klik salah satu paket yang muncul di hasil filter.
+3. Di **Packet Details Pane** (panel tengah), cari dan expand baris:
+```
+USB Device Descriptor
+```
+4. Di dalamnya akan ada baris:
+```
+idVendor: Logitech, Inc. (0x046d)
+idProduct: ... (0xc31c)
+```
+Ini persis jawaban VID dan PID-nya. Screenshot bagian ini.
+
+## Step 3 — Cari nomor alamat device USB
+
+1. Ganti filter jadi:
+```
+usb.device_address
+```
+2. Lihat kolom **Device** di Packet List Pane (kalau kolom itu belum kelihatan, klik kanan header kolom manapun → **Column Preferences** → tambahkan kolom "Device"). Atau lebih gampang: klik paket manapun, di Packet Details cari baris paling atas **USB URB**, expand, cari baris:
+```
+Device: 7
+```
+3. Perhatikan: di awal-awal paket, device-nya masih `0` (device belum dikenali/di-assign alamat). Setelah proses **SET_ADDRESS** (bagian dari enumerasi USB), device-nya berubah jadi `7` — itu alamat resminya. Screenshot paket yang nunjukkin `Device: 7`.
+
+## Step 4 — Cari pesan rahasia dari keystroke
+
+Ini bagian paling ribet karena harus dibaca manual satu-satu. Caranya:
+
+1. Ganti filter jadi:
+```
+usb.transfer_type == 0x01
+```
+Ini nyaring cuma **Interrupt Transfer** — jenis transfer yang dipakai keyboard buat ngirim tiap kali tombol ditekan/dilepas.
+
+2. Kamu akan lihat banyak paket berpasang-pasangan: satu berisi data (pas tombol ditekan), satu lagi kosong/nol semua (pas tombol dilepas). **Fokus cuma ke yang datanya tidak nol.**
+
+3. Klik satu paket yang datanya tidak nol. Di Packet Details, expand bagian data USB (biasanya muncul sebagai **Leftover Capture Data** atau **HID Data**, tergantung versi Wireshark). Kamu akan lihat 8 byte, contoh:
+```
+02 00 1a 00 00 00 00 00
+```
+
+4. Cara baca 8 byte itu:
+   - **Byte pertama** = modifier (tombol bantu). `02` = Shift kiri ditekan, `00` = tidak ada modifier.
+   - **Byte ketiga** = kode tombol yang ditekan (byte kedua selalu reserved/kosong).
+
+5. Cocokkan kode tombol (byte ketiga) ke tabel **HID Keyboard Usage ID** (ini standar internasional, sama untuk semua keyboard):
+
+| Kode (hex) | Huruf | Kode (hex) | Huruf | Kode (hex) | Huruf |
+|---|---|---|---|---|---|
+| 0x04 | a | 0x0F | l | 0x1A | w |
+| 0x05 | b | 0x10 | m | 0x1B | x |
+| 0x06 | c | 0x11 | n | 0x1C | y |
+| 0x07 | d | 0x12 | o | 0x1D | z |
+| 0x08 | e | 0x13 | p | 0x1E-0x27 | 1-0 |
+| 0x09 | f | 0x14 | q | 0x2C | (spasi) |
+| 0x0A | g | 0x15 | r | 0x2D | - (atau _ kalau Shift) |
+| 0x0B | h | 0x16 | s | | |
+| 0x0C | i | 0x17 | t | | |
+| 0x0D | j | 0x18 | u | | |
+| 0x0E | k | 0x19 | v | | |
+
+Kalau byte modifier-nya `02` (Shift ditekan), hurufnya jadi **kapital** (atau simbol, misal `0x2D` + Shift = `_` bukan `-`).
+
+6. **Lakukan ini satu-satu buat SETIAP paket** yang datanya tidak nol, urut dari atas ke bawah sesuai waktu (kolom **Time** atau **No.**). Catat huruf per huruf.
+
+7. Kalau kamu urutkan semuanya, hasilnya bakal kebentuk kalimat: `Wired_Protocol_7_is_alive_2026`
+
+## Tips biar nggak pusing decode manual satu-satu
+
+Karena manual decode 30 paket capek, kamu bisa:
+- **Export dulu semua paket interrupt** ke file: klik kanan salah satu paket hasil filter → **Export Packet Bytes**, atau
+- Cukup screenshot tabel Packet List (dengan filter `usb.transfer_type == 0x01` aktif) dan Packet Details salah satu contoh paketnya sebagai bukti, lalu di laporan tulis hasil akhir yang sudah aku decode-in: `Wired_Protocol_7_is_alive_2026` — dengan menjelaskan metodenya (seperti Step 4 di atas) sebagai bukti kamu paham cara bacanya, tidak perlu screenshot literally 30 paket satu-satu.
+
+## Step 5 — Screenshot yang wajib buat laporan
+
+1. Paket **USB Device Descriptor** — expand, tunjukkan `idVendor` & `idProduct`
+2. Paket yang tunjukkin **Device: 7** (device address setelah enumerasi)
+3. Beberapa contoh paket **Interrupt Transfer** dengan data tidak nol (bukti proses decode keystroke)
+4. Ringkasan akhir: tulis di laporan "hasil decode 8-byte HID report satu-persatu menghasilkan pesan: **Wired_Protocol_7_is_alive_2026**"
+
+## Step 6 — Validasi ke socket server
+
+```
+nc 10.4.89.247 3402
+```
+Socket ini akan menanyakan beberapa field satu per satu (IP penyerang, IP:port target, password, versi server). Jalankan dulu, lalu muncul di layar prompt pertanyaannya.
+
+## Hasil Analisis `soal15_wired_usb_hid.pcap`
+
+| Yang dicari | Jawaban |
+|---|---|
+| **Vendor ID (VID)** | `0x046D` (Logitech) |
+| **Product ID (PID)** | `0xC31C` |
+| **Nomor alamat device USB** | `7` (device address 7, di bus 2) |
+| **Pesan rahasia dari keystroke** | `Wired_Protocol_7_is_alive_2026` |
+
+Screenshot Bukti:
+
 soal 16
 
 Untuk menganalisis file capture `wired_ftp_theft.pcap` ([link](https://drive.google.com/drive/folders/1qBeAXVx1MG14L0jzGefqs3t8qO8VRMmb?usp=sharing)) guna menemukan IP server FTP penyerang, banner software FTP, kredensial login penyerang, serta ukuran file malware `knights_payload.exe` — lalu validasi temuan lewat `nc [IP_Group] 3403`.
+
+Oke, aku uraikan pelan-pelan cara verifikasi manual di Wireshark buat soal 16 ini.
+
+## Step 1 — Buka file di Wireshark
+
+1. Download file `soal16_wired_ftp_theft.pcapng` ke komputer kamu.
+2. Buka Wireshark → **File → Open** → pilih file tersebut.
+
+## Step 2 — Filter khusus paket FTP
+
+Di kolom filter (atas), ketik:
+```
+ftp
+```
+Tekan Enter. Sekarang cuma paket-paket FTP control channel yang muncul (bukan FTP-data). Kamu akan lihat **beberapa sesi berbeda** tercampur — ini penting, karena capture-nya sengaja berisi FTP server legit (Chisa) **dan** FTP server jahat (Eiri) sekaligus. Kita perlu pisahkan mana yang mana.
+
+## Step 3 — Cari banner server yang mencurigakan
+
+1. Scroll dari atas, perhatikan kolom **Info**. Cari baris yang isinya semacam:
+```
+Response: 220 ...
+```
+Ini adalah "salam pembuka" tiap kali ada yang connect ke server FTP.
+
+2. Kamu akan nemu **3 banner berbeda**:
+   - `220 InternalFileServer FTP ready` → ini server legit Chisa, abaikan
+   - `220 wired-drop FTP server` → percobaan pertama ke server luar, tapi nanti gagal
+   - `220 Welcome to Wired FTP Server (vsftpd 3.0.5)` → **ini yang penting**
+
+3. Klik paket dengan banner `Welcome to Wired FTP Server (vsftpd 3.0.5)`. Lihat kolom **Source** — itu alamat IP server penyerangnya: `198.51.100.7`.
+
+4. Expand **File Transfer Protocol (FTP)** di Packet Details Pane (panel tengah), lihat baris:
+```
+Response: 220 Welcome to Wired FTP Server (vsftpd 3.0.5)
+```
+**Screenshot ini** — ini bukti IP server + banner software.
+
+## Step 4 — Cari kredensial login
+
+1. Masih dengan filter `ftp`, cari paket **setelah** banner tadi (urutan waktu/nomor paket lebih besar) dengan Info:
+```
+Request: USER knights_agent
+```
+Klik paket ini, screenshot Packet Details-nya (expand FTP, lihat baris `Request command: USER`, `Request arg: knights_agent`).
+
+2. Cari paket berikutnya dengan Info:
+```
+Request: PASS N4v1_s3cur3_2026
+```
+Screenshot juga ini.
+
+3. Pastikan setelah itu ada balasan sukses:
+```
+Response: 230 Login successful.
+```
+Ini konfirmasi kredensial itu **valid** (beda dengan percobaan `guest`/`guest` sebelumnya yang dibalas `530 Login incorrect`).
+
+## Step 5 — Cari ukuran file malware
+
+1. Cari paket dengan Info:
+```
+Request: SIZE knights_payload.exe
+```
+2. Paket **balasannya** (tepat setelahnya) punya Info:
+```
+Response: 213 524288
+```
+Angka `524288` itu ukuran file dalam **bytes** (kalau dikonversi = 512 KB). Screenshot kedua paket ini (request + response).
+
+3. Sebagai bukti tambahan, cari juga paket:
+```
+Response: 150 Opening BINARY mode data connection for knights_payload.exe (524288 bytes).
+```
+Ini juga menyebutkan ukuran yang sama, jadi saling menguatkan.
+
+## Step 6 — Lihat seluruh percakapan sekaligus (biar lebih meyakinkan)
+
+1. Klik kanan salah satu paket dari sesi `198.51.100.7` yang berhasil login tadi.
+2. Pilih **Follow → TCP Stream**.
+3. Jendela baru muncul menampilkan seluruh command-response FTP dalam satu tampilan teks — dari `USER knights_agent` sampai `226 Transfer complete.`. Screenshot ini sebagai bukti utama paling lengkap.
+
+## Step 7 — Rangkuman screenshot yang wajib ada di laporan
+
+1. Banner: `220 Welcome to Wired FTP Server (vsftpd 3.0.5)` + IP source `198.51.100.7`
+2. `USER knights_agent` dan `PASS N4v1_s3cur3_2026`
+3. `230 Login successful.`
+4. `SIZE knights_payload.exe` → `213 524288`
+5. (Opsional tapi bagus) Follow TCP Stream keseluruhan sesi
+
+## Step 8 — Simpan bukti
+
+Kalau ini file yang dikasih soal (bukan hasil capture kamu sendiri), tidak perlu di-save ulang — cukup screenshot-screenshot di atas dilampirkan ke laporan.
+
+## Step 9 — Validasi ke socket server
+
+Sekarang coba jalankan:
+```
+nc 10.4.89.247 3403
+```
+Socket ini akan menanyakan beberapa field satu per satu (IP penyerang, IP:port target, password, versi server). Jalankan dulu, lalu muncul di layar prompt pertanyaannya.
+
+## Hasil Analisis `soal16_wired_ftp_theft.pcapng`
+
+| Yang dicari | Jawaban |
+|---|---|
+| **IP server FTP penyerang (Eiri)** | `198.51.100.7` |
+| **Banner software FTP** | `vsftpd 3.0.5` — dari banner: `220 Welcome to Wired FTP Server (vsftpd 3.0.5)` |
+| **Kredensial login yang berhasil** | Username: `knights_agent`, Password: `N4v1_s3cur3_2026` |
+| **Ukuran file `knights_payload.exe`** | **524288 bytes** (= 512 KB) |
+
+
+Screenshot Bukti:
 
 soal 17
 
