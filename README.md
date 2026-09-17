@@ -11,6 +11,37 @@ soal 1
 
 Untuk mempersiapkan pembangunan The Wired, kita membangun topologi jaringan The Wired di GNS3, dengan Router Lain sebagai pusat yang terhubung ke tiga Switch: Switch 1 (menuju Alice & Mika), Switch 2 (menuju Chisa), dan Switch 3 (menuju Knights & Eiri) — di mana kelima entitas tersebut dikonfigurasi sebagai Client, menggunakan prefix IP sesuai kelompok masing-masing.
 
+**###(Bangun Topologi)**:
+
+***Langkah 1: Siapkan node-nya***
+Tarik ke workspace GNS3:
+- 1 Router (kasih 4 adapter/interface)
+- 1 NAT node
+- 3 Switch (Ethernet switch)
+- 5 Client (1 adapter aja tiap client)
+
+**Langkah 2: Kasih nama biar gak bingung**
+Rename semua node sesuai perannya:
+`Router-Lain`, `Switch1`, `Switch2`, `Switch3`, `Alice`, `Mika`, `Chisa`, `Knights`, `Eiri`
+
+**Langkah 3: Sambungkan kabelnya**
+- NAT → Router-Lain (di eth0)
+- Switch1 → Router-Lain (di eth1), lalu Switch1 → Alice, dan Switch1 → Mika
+- Switch2 → Router-Lain (di eth2), lalu Switch2 → Chisa
+- Switch3 → Router-Lain (di eth3), lalu Switch3 → Knights, dan Switch3 → Eiri
+
+*(Jadi Router-Lain punya 4 kaki: 1 ke NAT, 3 ke masing-masing switch)*
+
+**Langkah 4: Setting IP di tiap node**
+Edit file `/etc/network/interfaces` di setiap node sesuai IP yang sudah ditentukan kelompok kalian. Contoh settingan Router-Lain ada di Fase 2, dan contoh settingan Client polanya sama seperti di modul bagian 2.7.2 — tinggal disesuaikan IP dan interface-nya saja.
+
+**Langkah 5: Tes dulu**
+Nyalakan semua node, lalu di tiap node ketik:
+```
+ip a
+```
+Ini buat mengecek apakah IP address sudah terpasang dengan benar di masing-masing interface. Kalau sudah, kirim hasil screenshot-nya untuk dicek.
+
 soal 2
 
 Untuk menghubungkan Router Lain ke jaringan internet publik melalui NAT/DHCP pada interface eth0, karena The Wired saat itu masih terisolasi dari dunia luar.
