@@ -209,7 +209,7 @@ ping -c 3 <IP_Chisa>
 ```
 Hasil:
 
-<img width="347" height="284" alt="image" src="https://github.com/user-attachments/assets/e607c539-2a26-4df8-9701-5c35e7b2a31e" />
+<img width="959" height="430" alt="image" src="https://github.com/user-attachments/assets/d640a90e-e5b9-419e-b505-c50ca25d931d" />
 
 **Hasil yang diharapkan:** 
 
