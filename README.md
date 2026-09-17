@@ -21,9 +21,7 @@ Tarik ke workspace GNS3:
 - 3 Switch (Ethernet switch)
 - 5 Client (1 adapter aja tiap client)
 
-###### Memberikan nama sesuai soal
-
-Rename semua node sesuai perannya:
+###### Memberikan Rename semua node sesuai perannya:
 
 `Router-Lain`, `Switch1`, `Switch2`, `Switch3`, `Alice`, `Mika`, `Chisa`, `Knights`, `Eiri`
 
@@ -102,7 +100,6 @@ iface eth0 inet static
 
 <img width="959" height="225" alt="image" src="https://github.com/user-attachments/assets/3fb6adce-7743-4804-b2ea-683b91e8f5e4" />
 
-
 ###### Mika
 
 ``` auto eth0
@@ -143,10 +140,6 @@ iface eth0 inet static
 ```
 <img width="959" height="234" alt="image" src="https://github.com/user-attachments/assets/1f7372be-50cd-4b09-aca5-483fe6d3466a" />
 
-###### Merestart networking / reboot node
-
-agar konfigurasi di jalankan.
-
 ###### Tes koneksi internet
 
 Di konsol Router-Lain, ketik:
@@ -163,9 +156,7 @@ ping -c 3 8.8.8.8
 3 packets transmitted, 3 received, 0% packet loss
 ```
 
-➡️ Berarti Router-Lain **sudah berhasil online** dan siap jadi pintu keluar untuk semua Client di bawahnya.
-
-jika gagal (`Destination unreachable` atau `100% packet loss`), kemungkinan masalah di NAT node atau eth0 belum dapat IP cek dengan `ip a` di eth0 dulu.
+➡️ Berarti Router-Lain **sudah berhasil online** dan siap jadi pintu keluar untuk semua Client di bawahnya. jika gagal (`Destination unreachable` atau `100% packet loss`), kemungkinan masalah di NAT node atau eth0 belum dapat IP cek dengan `ip a` di eth0 dulu.
 
 ---
 ### soal 3
@@ -220,8 +211,6 @@ Semua client bisa saling ping (0% packet loss), baik yang satu switch maupun bed
 
 Untuk mengkonfigurasi firewall/iptables (NAT Masquerade) dan DNS resolver di Router Lain, agar setiap Entitas (Client) dapat terhubung ke internet secara mandiri dibuktikan dengan bisa ping ke 8.8.8.8 dan membuka domain google.com.
 
-Supaya semua Client (Alice, Mika, Chisa, Knights, Eiri) bisa akses internet **sendiri-sendiri** lewat Router-Lain, bukan cuma Router-Lain doang yang online.
-
 ###### Menyetting NAT & Firewall di Router-Lain
 
 Ketik perintah-perintah ini di konsol Router-Lain:
@@ -233,15 +222,6 @@ iptables -A FORWARD -i eth2 -o eth0 -j ACCEPT
 iptables -A FORWARD -i eth3 -o eth0 -j ACCEPT
 iptables -A FORWARD -i eth0 -m state --state ESTABLISHED,RELATED -j ACCEPT
 ```
-
-**Penjelasan :**
-| Perintah | Fungsinya |
-|---|---|
-| `MASQUERADE` di eth0 | "Menyamarkan" IP lokal Client jadi IP Router-Lain saat keluar ke internet ini inti dari NAT |
-| `FORWARD -i eth1/eth2/eth3 -o eth0` | Mengizinkan traffic dari Switch1/2/3 diteruskan **keluar** lewat eth0 (internet) |
-| `FORWARD -i eth0 ... ESTABLISHED,RELATED` | Mengizinkan balasan dari internet **masuk kembali** ke Client yang tadi request |
-
-*(Kalau baris terakhir gak ada, Client bisa kirim request keluar tapi gak akan pernah terima balasannya)*
 
 ###### Menyetting DNS di tiap Client
 
@@ -307,10 +287,6 @@ iface eth0 inet dhcp
     up iptables -A FORWARD -i eth0 -m state --state ESTABLISHED,RELATED -j ACCEPT
 ```
 
-**Cara kerjanya:** 
-
-Baris `up` itu artinya "jalankan perintah ini otomatis setiap kali interface eth0 dinyalakan" jadi walau node di-restart, semua setting NAT & forwarding akan otomatis terpasang lagi tanpa perlu diketik manual.
-
 ###### Memindahkan config DNS ke file interfaces (di tiap Client)
 
 Di file `/etc/network/interfaces` masing-masing Client (Alice, Mika, Chisa, Knights, Eiri), tambahkan baris `up` untuk DNS-nya juga:
@@ -340,11 +316,12 @@ chmod +x /root/cek_status.sh
 
 **Fungsinya:** 
 
+*(Script ini aman disimpan agar tidak ikut hilang saat container restart)*
 Script ini membuat satu file `cek_status.sh` yang kalau dijalankan, langsung nampilin dua hal sekaligus:
+
 **Ringkasan interface** (`ip -br a`) → cek IP tiap eth masih terpasang atau tidak
 **Tabel NAT** (`iptables -t nat -L -v -n`) → cek aturan MASQUERADE masih ada atau tidak
 
-*(Script ini aman disimpan agar tidak ikut hilang saat container restart)*
 
 ###### Tes persistensi
 
