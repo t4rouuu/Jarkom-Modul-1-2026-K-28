@@ -427,10 +427,8 @@ lalu tekan Enter. Wireshark akan menyembunyikan paket lain dan hanya menampilkan
     buka menu **Statistics → Protocol Hierarchy**, ini menampilkan jumlah/persentase paket DNS vs ICMP dari total capture
    
    <img width="1532" height="865" alt="WhatsApp Image 2026-09-15 at 12 28 31" src="https://github.com/user-attachments/assets/3d6cae53-86d5-46db-9430-5ca15524df5e" />
-   
-[Uploading soal6-mika-dns-icmp.pcapng…]()
 
-**Step 6: Hentikan & simpan capture**
+###### Hentikan & simpan capture**
 
 1. Klik kanan kabel yang sama di GNS3 → **Stop capture**
 2. Di Wireshark: **File → Save As**, simpan dengan nama jelas, misal:
@@ -438,6 +436,8 @@ lalu tekan Enter. Wireshark akan menyembunyikan paket lain dan hanya menampilkan
    soal6-mika-dns-icmp.pcapng
    ```
 3. File ini nanti dilampirkan sebagai bukti di laporan.
+
+
 soal 7
 
 Untuk membuat FTP Server di node Chisa dengan shared folder `/var/wired/data`, menerapkan kebijakan akses (alice: read & write, mika: read-only, eiri: no access/blacklist), serta membuktikannya dengan membuat file `signal_alice.txt` dari akun alice dan menunjukkan penolakan akses saat eiri mencoba login.
