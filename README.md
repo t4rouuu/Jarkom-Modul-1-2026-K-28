@@ -413,6 +413,9 @@ lalu tekan Enter. Wireshark akan menyembunyikan paket lain dan hanya menampilkan
    ```
    soal6-mika-dns-icmp.pcapng
    ```
+   [soal6-mika-dns-icmp.zip](https://github.com/user-attachments/files/32324473/soal6-mika-dns-icmp.zip)
+
+
 3. File ini nanti dilampirkan sebagai bukti di laporan.
 
 ---
