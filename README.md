@@ -187,7 +187,7 @@ cat /proc/sys/net/ipv4/ip_forward
 ```
 Hasil:
 
-<img width="377" height="65" alt="image" src="https://github.com/user-attachments/assets/71a0a559-9466-49e0-8c66-58094f0045e2" />
+<img width="959" height="120" alt="image" src="https://github.com/user-attachments/assets/fb367501-af34-4cc2-92fa-2e511282b36e" />
 
 jika hasilnya `1` → sudah aktif dan siap meneruskan traffic antar subnet.
 
