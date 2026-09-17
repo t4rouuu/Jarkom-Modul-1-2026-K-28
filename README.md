@@ -13,7 +13,7 @@ Untuk mempersiapkan pembangunan The Wired, kita membangun topologi jaringan The 
 
 ##### Bangun Topologi:
 
-**Langkah 1: Siapkan node-nya**
+**Menyiapkan nodenya**
 
 Tarik ke workspace GNS3:
 - 1 Router (kasih 4 adapter/interface)
@@ -21,26 +21,26 @@ Tarik ke workspace GNS3:
 - 3 Switch (Ethernet switch)
 - 5 Client (1 adapter aja tiap client)
 
-**Langkah 2: Kasih nama sesuai soal**
+**Memberikan nama sesuai soal**
 
 Rename semua node sesuai perannya:
+
 `Router-Lain`, `Switch1`, `Switch2`, `Switch3`, `Alice`, `Mika`, `Chisa`, `Knights`, `Eiri`
 
-**Langkah 3: Sambungkan kabelnya**
+**Menyambungkan kabelnya**
 
 - NAT → Router-Lain (di eth0)
 - Switch1 → Router-Lain (di eth1), lalu Switch1 → Alice, dan Switch1 → Mika
 - Switch2 → Router-Lain (di eth2), lalu Switch2 → Chisa
 - Switch3 → Router-Lain (di eth3), lalu Switch3 → Knights, dan Switch3 → Eiri
 
-*(Jadi Router-Lain punya 4 kaki: 1 ke NAT, 3 ke masing-masing switch)*
+**Menyeting IP di tiap node**
 
-**Langkah 4: Setting IP di tiap node**
+Edit file `/etc/network/interfaces` di setiap node sesuai IP yang sudah ditentukan. Contoh settingan Router-Lain ada di Modul Fase 2, dan contoh settingan Client polanya sama seperti di modul bagian 2.7.2  tinggal disesuaikan IP dan interface-nya saja.
 
-Edit file `/etc/network/interfaces` di setiap node sesuai IP yang sudah ditentukan kelompok kalian. Contoh settingan Router-Lain ada di Fase 2, dan contoh settingan Client polanya sama seperti di modul bagian 2.7.2 — tinggal disesuaikan IP dan interface-nya saja.
+**Menguji coba**
+Menyalakan semua node, lalu di tiap node ketik:
 
-**Langkah 5: Tes dulu**
-Nyalakan semua node, lalu di tiap node ketik:
 ```
 ip a
 ```
@@ -51,7 +51,7 @@ soal 2
 
 Untuk menghubungkan Router Lain ke jaringan internet publik melalui NAT/DHCP pada interface eth0, karena The Wired saat itu masih terisolasi dari dunia luar.
 
-**Langkah 1: Edit file konfigurasi**
+**Mengedit file konfigurasi**
 
 Buka file `/etc/network/interfaces` di Router-Lain, lalu isi seperti ini:
 
@@ -75,41 +75,134 @@ iface eth3 inet static
     netmask 255.255.255.0
 ```
 
-**Penjelasan simpelnya:**
+**Penjelasan :**
 
 - `eth0` → **dhcp** (otomatis dapat IP dari NAT, ini jalur keluar ke internet)
 - `eth1` → IP tetap `192.225.1.1` (gerbang buat Switch1 → Alice & Mika)
 - `eth2` → IP tetap `192.225.2.1` (gerbang buat Switch2 → Chisa)
 - `eth3` → IP tetap `192.225.3.1` (gerbang buat Switch3 → Knights & Eiri)
 
-**Langkah 2: Restart networking / reboot node** 
+**Merestart networking / reboot node** 
 
-biar konfigurasi kepakai.
+agar konfigurasi di jalankan.
 
-**Langkah 3: Tes koneksi internet**
+**Tes koneksi internet**
 
 Di konsol Router-Lain, ketik:
+
 ```
 ping -c 3 8.8.8.8
 ```
 
-**Kalau hasilnya seperti ini:**
+**jika hasilnya seperti ini:**
 
 masukkan foto
+
 ```
 3 packets transmitted, 3 received, 0% packet loss
 ```
-➡️ Berarti Router-Lain **sudah berhasil online** dan siap jadi pintu keluar buat semua Client di bawahnya.
 
-Kalau gagal (`Destination unreachable` atau `100% packet loss`), kemungkinan masalah di NAT node atau eth0 belum dapat IP — cek dengan `ip a` di eth0 dulu.
+➡️ Berarti Router-Lain **sudah berhasil online** dan siap jadi pintu keluar untuk semua Client di bawahnya.
+
+jika gagal (`Destination unreachable` atau `100% packet loss`), kemungkinan masalah di NAT node atau eth0 belum dapat IP — cek dengan `ip a` di eth0 dulu.
 
 soal 3
 
 Untuk memastikan seluruh Entitas (Client) di bawah Switch 1, Switch 2, dan Switch 3 dapat saling terhubung dan berkomunikasi satu sama lain, dengan mengkonfigurasi routing pada Router Lain setelah router tersebut terhubung ke internet.
 
+**Mengaktifkan IP forwarding**
+
+Di konsol Router-Lain, ketik:
+
+```
+sysctl -w net.ipv4.ip_forward=1
+```
+
+**Memastikan sudah aktif**
+
+```
+cat /proc/sys/net/ipv4/ip_forward
+```
+
+jika hasilnya `1` → sudah aktif dan siap meneruskan traffic antar subnet.
+jika hasilnya `0` → berarti belum berhasil, ulangi langkah 1.
+
+**Tes koneksi antar Entitas**
+
+Coba ping dari satu client ke client lain, contoh:
+- **Alice → Mika** (masih satu Switch, Switch1)
+- **Alice → Chisa** (beda Switch, lewat Router-Lain)
+- **Knights → Eiri** (masih satu Switch, Switch3)
+- **Mika → Knights** (beda Switch, lewat Router-Lain)
+
+Caranya, dari konsol client (misal Alice):
+
+```
+ping -c 3 <IP_Mika>
+ping -c 3 <IP_Chisa>
+```
+
+**Hasil yang diharapkan:** Semua client bisa saling ping (0% packet loss), baik yang satu switch maupun beda switch — tandanya routing dan forwarding di Router-Lain sudah jalan dengan benar.
+
+masukkan foto
+
 soal 4
 
 Untuk mengkonfigurasi firewall/iptables (NAT Masquerade) dan DNS resolver di Router Lain, agar setiap Entitas (Client) dapat terhubung ke internet secara mandiri — dibuktikan dengan bisa ping ke 8.8.8.8 dan membuka domain google.com.
+
+Supaya semua Client (Alice, Mika, Chisa, Knights, Eiri) bisa akses internet **sendiri-sendiri** lewat Router-Lain, bukan cuma Router-Lain doang yang online.
+
+**Menyetting NAT & Firewall di Router-Lain**
+
+Ketik perintah-perintah ini di konsol Router-Lain:
+
+```
+iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+iptables -A FORWARD -i eth1 -o eth0 -j ACCEPT
+iptables -A FORWARD -i eth2 -o eth0 -j ACCEPT
+iptables -A FORWARD -i eth3 -o eth0 -j ACCEPT
+iptables -A FORWARD -i eth0 -m state --state ESTABLISHED,RELATED -j ACCEPT
+```
+
+**Penjelasan :**
+| Perintah | Fungsinya |
+|---|---|
+| `MASQUERADE` di eth0 | "Menyamarkan" IP lokal Client jadi IP Router-Lain saat keluar ke internet — ini inti dari NAT |
+| `FORWARD -i eth1/eth2/eth3 -o eth0` | Mengizinkan traffic dari Switch1/2/3 diteruskan **keluar** lewat eth0 (internet) |
+| `FORWARD -i eth0 ... ESTABLISHED,RELATED` | Mengizinkan balasan dari internet **masuk kembali** ke Client yang tadi request |
+
+*(Kalau baris terakhir gak ada, Client bisa kirim request keluar tapi gak akan pernah terima balasannya)*
+
+**Menyetting DNS di tiap Client**
+
+Di setiap node Client (Alice, Mika, Chisa, Knights, Eiri), ketik:
+
+```
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+```
+
+Ini membuat Client tahu ke mana harus "bertanya" kalau mau translate nama domain (misal `google.com`) jadi IP address.
+
+**Langkah 3: Tes dari tiap Client**
+
+Di konsol masing-masing Client, coba:
+```
+ping -c 3 8.8.8.8
+```
+➡️ jika berhasil, artinya jalur internet (NAT & routing) sudah benar.
+
+```
+ping -c 3 google.com
+```
+atau
+```
+curl google.com
+```
+➡️ jika ini juga berhasil, artinya DNS resolver-nya juga sudah jalan (bisa translate nama domain ke IP).
+
+jadi jika kedua tes di atas berhasil di semua 5 Client**, berarti Fase 4 sudah beres  setiap Entitas sudah bisa "berdiri sendiri" mengakses internet tanpa perlu campur tangan lebih lanjut dari Router-Lain.
+
+masukkan foto  
 
 soal 5
 
