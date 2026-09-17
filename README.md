@@ -1216,9 +1216,6 @@ Ambil 3 screenshot, masing-masing menunjukkan paket balasan dari Knights dengan 
 2. **Balasan port 80** → tunjukkan flag `SYN, ACK`
 3. **Balasan port 7777** → tunjukkan flag `RST, ACK`
 
-#####  jelaskan mengapa kredensial tidak terlihat dalam bentuk teks terbuka seperti pada Telnet? 
-
->SSH melakukan Key Exchange (pertukaran kunci) di awal koneksi untuk menyepakati kunci enkripsi sesi antara client dan server, tanpa mengirim kunci itu sendiri lewat jaringan. Setelah kunci disepakati, semua data (termasuk username, password, dan isi sesi) dienkripsi. Jadi kalau disadap di Wireshark, yang terlihat cuma "Encrypted Packet" — bytes acak yang tidak terbaca — bukan teks polos seperti Telnet.
 
 ###### Hentikan & simpan capture
 
@@ -1228,10 +1225,192 @@ Ambil 3 screenshot, masing-masing menunjukkan paket balasan dari Knights dengan 
 soal12-alice-scan-knights.pcapng
 ```
 ---
-
-soal 13
+### soal 13
 
 Menyuruh kita untuk menginstall OpenSSH di node Knights, membuat SSH key (ssh-keygen) di node Mika untuk user mika_admin, mengatur PasswordAuthentication no, lalu melakukan koneksi SSH dari Mika ke Knights, menangkap sesi dengan Wireshark, mengidentifikasi paket Protocol Version Exchange & Key Exchange, serta menjelaskan mengapa kredensial tidak terlihat plain text seperti di Telnet.
+
+
+###### Menginstall OpenSSH server di Knights
+
+Cek OS dulu:
+```
+cat /etc/os-release
+```
+```
+apk update
+apk add openssh
+ssh-keygen -A
+```
+
+###### Membuat user mika_admin di Knights
+```
+adduser -D mika_admin          # Alpine
+useradd -m -s /bin/bash mika_admin   # Debian
+```
+Set password sementara dulu (nanti dimatikan setelah key jalan):
+```
+passwd mika_admin
+```
+
+###### Menjalankan SSH server di Knights
+```
+/usr/sbin/sshd
+```
+Cek jalan:
+```
+netstat -tulnp | grep :22
+```
+
+---
+
+###### Generate SSH key pair di Mika
+
+Cek `ssh-keygen` ada:
+```
+which ssh-keygen
+```
+Kalau belum ada:
+```
+apk add openssh-client    # Alpine
+apt install -y openssh-client    # Debian
+```
+Generate key pair:
+```
+ssh-keygen -t rsa -b 2048 -f /root/.ssh/id_rsa -N ""
+```
+**Penjelasan opsi:**
+- `-t rsa -b 2048` → jenis dan panjang key
+- `-f` → lokasi file key disimpan
+- `-N ""` → tanpa passphrase (biar benar-benar tanpa password)
+
+Cek hasilnya:
+```
+ls -la /root/.ssh/
+```
+Harus muncul 2 file: `id_rsa` (private, **jangan pernah dikirim ke mana pun**) dan `id_rsa.pub` (public, boleh disebar).
+
+
+###### Menyalin public key dari Mika ke Knights
+
+Di Mika, tampilkan isi public key:
+```
+cat /root/.ssh/id_rsa.pub
+```
+**Copy seluruh baris output ini** (mulai `ssh-rsa AAAA...` sampai akhir).
+
+Balik ke Knights, buat folder `.ssh` untuk `mika_admin`:
+```
+mkdir -p /home/mika_admin/.ssh
+nano /home/mika_admin/.ssh/authorized_keys
+```
+Paste public key tadi, simpan (`Ctrl+O`, Enter, `Ctrl+X`).
+
+Set permission yang benar (SSH ketat soal ini — kalau salah, login ditolak):
+```
+chmod 700 /home/mika_admin/.ssh
+chmod 600 /home/mika_admin/.ssh/authorized_keys
+chown -R mika_admin:mika_admin /home/mika_admin/.ssh
+```
+
+######  Tes login pakai key (sebelum matikan password)
+
+Dari Mika:
+```
+ssh -i /root/.ssh/id_rsa mika_admin@[IP_KNIGHTS]
+```
+Kalau berhasil masuk **tanpa diminta password** (atau cuma diminta konfirmasi fingerprint pertama kali, ketik `yes`), berarti key authentication sudah jalan. Keluar:
+```
+exit
+```
+*(Kalau masih diminta password, cek lagi permission folder `.ssh` atau isi `authorized_keys` di Step 5)*
+
+---
+
+###### Matikan password authentication di Knights
+
+Edit config SSH:
+```
+nano /etc/ssh/sshd_config
+```
+Cari/ubah baris:
+```
+PasswordAuthentication no
+PubkeyAuthentication yes
+```
+Simpan, lalu restart SSH:
+```
+pkill sshd
+/usr/sbin/sshd
+```
+
+###### Menyalakan Wireshark
+
+1. Klik kanan kabel **Mika ↔ Switch1** di GNS3
+2. **Start capture** → centang visualisasi → OK
+3. Filter:
+   ```
+   ssh
+   ```
+
+###### Login SSH lagi (buat direkam Wireshark)
+
+Dari Mika:
+```
+ssh -i /root/.ssh/id_rsa mika_admin@[IP_KNIGHTS]
+```
+Jalankan perintah simpel:
+```
+whoami
+```
+Keluar:
+```
+exit
+```
+
+
+###### Membaca hasil di Wireshark**
+
+Dengan filter `ssh` aktif, cari 3 tahap:
+
+**A. Protocol Version Exchange**
+2 paket paling awal (Mika ↔ Knights). Expand **SSH Protocol** di Packet Details:
+```
+SSH Version 2 (banner) exchange
+```
+Isinya string seperti `SSH-2.0-OpenSSH_9.x` — ini **satu-satunya bagian yang masih plaintext**, cuma info versi software, bukan kredensial.
+
+**B. Key Exchange (KEX)**
+Cari paket dengan info `Key Exchange Init` dan `Elliptic Curve Diffie-Hellman Key Exchange` — ini proses negosiasi algoritma enkripsi.
+
+**C. Setelah KEX — semua terenkripsi**
+Paket berikutnya (termasuk proses autentikasi dan perintah `whoami`) akan muncul sebagai **"Encrypted Packet"** — klik salah satu, isinya cuma random bytes tidak terbaca.
+
+
+###### Follow TCP Stream (opsional, bagus buat laporan)
+
+Klik kanan salah satu paket SSH → **Follow → TCP Stream**. Bandingkan dengan hasil Soal 11 (Telnet) — di sini cuma sedikit teks terbaca (banner versi), sisanya karakter acak/binary. **Beda total** dengan Telnet yang semuanya kebaca jelas.
+
+###### Analisis untuk laporan
+
+> Berbeda dengan Telnet yang mengirim setiap karakter (termasuk username dan password) sebagai plaintext murni, SSH melakukan proses **Key Exchange (KEX)** di awal sesi untuk menyepakati kunci enkripsi simetris antara client dan server secara aman (misal pakai Diffie-Hellman), tanpa pernah mengirim kunci rahasia lewat jaringan. Setelah KEX selesai, seluruh komunikasi berikutnya — termasuk proses autentikasi dan semua data sesi — dienkripsi pakai cipher yang disepakati (misal AES). Akibatnya, penyadap hanya melihat **Protocol Version Exchange** (info versi software, tidak sensitif) dan setelahnya murni **Encrypted Packet** yang tidak bisa dibaca tanpa kunci privat yang sah.
+
+-
+
+###### screenshot Bukti
+1. Output `ssh -i ...` yang berhasil login **tanpa diminta password**
+2. Isi `/etc/ssh/sshd_config` yang menunjukkan `PasswordAuthentication no`
+3. Wireshark — paket **Protocol Version Exchange**
+4. Wireshark — paket **Key Exchange Init**
+5. Wireshark — salah satu paket **Encrypted Packet** setelah KEX
+
+###### Hentikan & simpan capture
+
+1. Klik kanan kabel yang sama di GNS3 → **Stop capture**
+2. Di Wireshark: **File → Save As**, simpan dengan nama jelas, misal:
+ ```
+     soal13-mika-ssh-knights.pcapng
+```
+---
 
 soal 14
 
