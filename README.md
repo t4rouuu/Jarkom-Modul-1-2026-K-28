@@ -44,7 +44,11 @@ Menyalakan semua node, lalu di tiap node ketik:
 ```
 ip a
 ```
+
 Hasil:
+
+###### Topologi
+
 <img width="665" height="377" alt="image" src="https://github.com/user-attachments/assets/d289a71c-f67c-45d4-b5b6-1f59de580895" />
 
 ### soal 2
@@ -82,6 +86,58 @@ iface eth3 inet static
 - `eth2` → IP tetap `192.225.2.1` (gerbang buat Switch2 → Chisa)
 - `eth3` → IP tetap `192.225.3.1` (gerbang buat Switch3 → Knights & Eiri)
 
+konfigurasi Cleint:
+
+###### Alice
+
+```
+auto eth0
+iface eth0 inet static
+    address 192.225.1.2
+    netmask 255.255.255.0
+    gateway 192.225.1.1
+```
+
+<img width="959" height="225" alt="image" src="https://github.com/user-attachments/assets/3fb6adce-7743-4804-b2ea-683b91e8f5e4" />
+
+Mika
+
+```auto eth0
+iface eth0 inet static
+    address 192.225.1.3
+    netmask 255.255.255.0
+    gateway 192.225.1.1
+    ```
+<img width="959" height="230" alt="image" src="https://github.com/user-attachments/assets/4afb5358-2abf-4885-bf70-724f35b76339" />
+
+Chisa
+
+```auto eth0
+iface eth0 inet static
+    address 192.225.2.2
+    netmask 255.255.255.0
+    gateway 192.225.1.1
+    ```
+<img width="959" height="226" alt="image" src="https://github.com/user-attachments/assets/0c2e7855-3952-41ea-a939-8b456ed9a793" />
+
+knights
+```auto eth0
+iface eth0 inet static
+    address 192.225.3.2
+    netmask 255.255.255.0
+    gateway 192.225.1.1
+    ```
+<img width="959" height="230" alt="image" src="https://github.com/user-attachments/assets/28322479-90bd-49ac-b423-22f34e3d89cb" />
+
+Eiri
+
+```auto eth0
+iface eth0 inet static
+    address 192.225.3.3
+    netmask 255.255.255.0
+    gateway 192.225.1.1
+    ```
+<img width="959" height="234" alt="image" src="https://github.com/user-attachments/assets/1f7372be-50cd-4b09-aca5-483fe6d3466a" />
 
 ###### 2. Merestart networking / reboot node
 
@@ -145,6 +201,7 @@ ping -c 3 <IP_Mika>
 ping -c 3 <IP_Chisa>
 ```
 Hasil:
+
 <img width="347" height="284" alt="image" src="https://github.com/user-attachments/assets/e607c539-2a26-4df8-9701-5c35e7b2a31e" />
 
 **Hasil yang diharapkan:** Semua client bisa saling ping (0% packet loss), baik yang satu switch maupun beda switch — tandanya routing dan forwarding di Router-Lain sudah jalan dengan benar.
@@ -208,19 +265,19 @@ jadi jika kedua tes di atas berhasil di semua 5 Client, berarti Fase 4 sudah ber
 Hasil:
 
 ###### Alice
-<img width="410" height="398" alt="image" src="https://github.com/user-attachments/assets/c1a2fc68-f7f5-4cc7-bd1c-0bd52a3bb0b1" />
+<img width="959" height="446" alt="image" src="https://github.com/user-attachments/assets/1680a9ee-bba8-4997-8b4a-39dde25effa5" />
 
 ###### Mika
-<img width="433" height="383" alt="image" src="https://github.com/user-attachments/assets/42239e67-60cf-4dc1-b8e6-a84109819f84" />
+<img width="959" height="448" alt="image" src="https://github.com/user-attachments/assets/efd853ef-3746-4da9-a9b1-3ec225aa25e9" />
 
 ###### Chisa
-<img width="458" height="383" alt="image" src="https://github.com/user-attachments/assets/bc73b9c9-7695-4a04-b60b-a006e9f98e1b" />
+<img width="959" height="440" alt="image" src="https://github.com/user-attachments/assets/0ee36a97-33cd-40b8-812e-a82061bcc448" />
 
 ###### Knights
-<img width="419" height="384" alt="image" src="https://github.com/user-attachments/assets/70219553-f0db-4a41-8e4f-174a90b97d4f" />
+<img width="959" height="449" alt="image" src="https://github.com/user-attachments/assets/e2a62a48-d0c8-41bf-b283-3b261efdacba" />
 
 ###### Eiri
-<img width="443" height="371" alt="image" src="https://github.com/user-attachments/assets/848b0604-b112-420b-a71d-748cafde00bd" />
+<img width="959" height="448" alt="image" src="https://github.com/user-attachments/assets/f2a3b925-8ccd-4e47-8290-578c7b51af8a" />
 
 soal 5
 
