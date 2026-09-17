@@ -1,4 +1,4 @@
-﻿# Jarkom-Modul-1-2026-K-28
+<img width="1147" height="1006" alt="WhatsApp Image 2026-09-16 at 14 13 29 (1)" src="https://github.com/user-attachments/assets/4fe98946-5d33-4cfd-a638-c371b63ae2f2" /><img width="1284" height="1014" alt="WhatsApp Image 2026-09-16 at 11 38 54" src="https://github.com/user-attachments/assets/cf5e4143-1a97-4132-9e65-432ae6cd33eb" /><img width="1600" height="849" alt="WhatsApp Image 2026-09-16 at 08 48 24" src="https://github.com/user-attachments/assets/664559d5-c2a8-4ab1-b741-6a366c38843d" /><img width="1600" height="849" alt="WhatsApp Image 2026-09-16 at 08 48 24" src="https://github.com/user-attachments/assets/7f28f806-abcf-4168-b2f2-fb0bc05b317b" /><img width="1600" height="898" alt="WhatsApp Image 2026-09-15 at 16 28 08" src="https://github.com/user-attachments/assets/9d6c11fe-2df5-4c71-85fe-c48caefa9b61" /><img width="1600" height="899" alt="WhatsApp Image 2026-09-15 at 16 27 35" src="https://github.com/user-attachments/assets/7c2f3af7-c479-4398-a364-56ef6405d6ca" />﻿# Jarkom-Modul-1-2026-K-28
 
 ## Kelompok K-28
 
@@ -871,6 +871,9 @@ Dengan filter `ftp or ftp-data` masih aktif, cari:
    ```
    RETR protocol7_manifesto.txt
    ```
+   
+   <img width="1600" height="896" alt="WhatsApp Image 2026-09-15 at 14 50 45" src="https://github.com/user-attachments/assets/6bfbceb5-d84b-43fa-bdb6-b69f4acbbc7e" />
+
 
 2. **Perintah STOR + penolakan**
    
@@ -878,7 +881,12 @@ Dengan filter `ftp or ftp-data` masih aktif, cari:
    - `STOR test_mika.txt`
    - Balasan server: `550 Permission denied.`
 
+<img width="955" height="226" alt="WhatsApp Image 2026-09-15 at 14 49 11" src="https://github.com/user-attachments/assets/00db6551-ec27-4402-a504-e5135b14b93e" />
+
 Klik kedua paket ini, expand bagian *File Transfer Protocol (FTP)* di Packet Details.
+
+<img width="1600" height="869" alt="WhatsApp Image 2026-09-15 at 14 51 32" src="https://github.com/user-attachments/assets/0f09791d-7849-485f-94e0-a029c66f7d8a" />
+
 
 ###### Hentikan & simpan capture
 
@@ -930,10 +938,10 @@ rtt min/avg/max/mdev = x.xxx/x.xxx/x.xxx/x.xxx ms
 - **RTT min/avg/max** → 3 angka pertama di baris kedua
 
   ###### Bukti screenshot:
+<img width="747" height="516" alt="WhatsApp Image 2026-09-15 at 15 08 38" src="https://github.com/user-attachments/assets/aed8adaf-dbe4-4f31-8448-866caf2991fc" />
 
   Output terminal ping lengkap (command + statistik RTT & packet loss)
 
-Screenshot output ini utuh.
 
 ###### ICMP Type & Code di Wireshark
 
@@ -956,16 +964,10 @@ Code: 0
 | Reply (Chisa → Knights) | 0 | 0 |
 
  ###### Bukti screenshot:
- 
+
+ <img width="1600" height="899" alt="WhatsApp Image 2026-09-15 at 15 16 21 (2)" src="https://github.com/user-attachments/assets/d4c6a532-a4ce-45bb-a896-8c1268bdbfd4" />
+
  Paket Echo Request di Wireshark (Type: 8, Code: 0)
- 
-###### Cek ukuran paket sesuai `-s 128`**
-
-Klik salah satu Echo Request, lihat kolom **Length** di Packet List (atau expand bagian **Data** di ICMP) — payload-nya sekitar 128 bytes (total frame lebih besar karena ada header Ethernet+IP+ICMP di depannya, itu wajar).
-
-###### Bukti screenshot:
-
-Paket Echo Reply di Wireshark (Type: 0, Code: 0)
 
 ###### Hentikan & simpan capture
 
@@ -1056,7 +1058,7 @@ exit
 
 Dengan filter `telnet` masih aktif, klik salah satu paket telnet, lalu:
 
-1. Klik kanan → **Follow → TCP Stream**
+Klik kanan → **Follow → TCP Stream**
 
 Akan muncul jendela berisi seluruh isi sesi:
 - **Merah** = yang dikirim dari client (Eiri)
@@ -1073,6 +1075,10 @@ Muncul **polos, bisa dibaca langsung** — inilah bukti kelemahan Telnet.
 
 ###### Screenshot Bukti:
 
+<img width="1600" height="897" alt="WhatsApp Image 2026-09-15 at 15 41 10" src="https://github.com/user-attachments/assets/d2125d33-fb19-42d2-8491-46739889070e" />
+
+<img width="1600" height="902" alt="WhatsApp Image 2026-09-15 at 15 41 36" src="https://github.com/user-attachments/assets/57582b3c-6ca9-4086-871e-33188536266a" />
+
 
 ###### Kenapa tiap karakter jadi paket terpisah?
 
@@ -1081,6 +1087,8 @@ Karena Telnet dirancang untuk emulasi terminal interaktif secara real-time, sehi
 Bukti visualnya: di Packet List Pane (bukan Follow Stream), scroll ke bagian saat password diketik akan terlihat banyak paket kecil (panjang total frame sekitar 55-60 byte, isi data cuma 1 byte) beruntun dari Eiri ke Chisa, diselingi paket balasan echo dari Chisa.
 
 ###### ###### Screenshot Bukti:
+<img width="1600" height="899" alt="WhatsApp Image 2026-09-15 at 15 45 51" src="https://github.com/user-attachments/assets/c5319918-ff5a-4607-a2c3-74179a4af6c8" />
+
 
 ###### Hentikan & simpan capture
 
@@ -1093,8 +1101,7 @@ Bukti visualnya: di Packet List Pane (bukan Follow Stream), scroll ke bagian saa
 ###### soal 12
 
 Untuk melakukan port scanning dari node Alice ke node Knights memakai Netcat pada port 22, 80 (terbuka), dan 7777 (tertutup), lalu menganalisis di Wireshark perbedaan TCP Flag antara port terbuka (SYN-ACK) dan port tertutup (RST-ACK).
-
-
+<img width="743" height="514" alt="WhatsApp Image 2026-09-15 at 16 21 29" src="https://github.com/user-attachments/assets/4d21e88c-3f54-44ef-9ea2-16ef1ff008ed" />
 
 ###### Memastikan port 22 (SSH) terbuka di Knights
 
@@ -1217,13 +1224,19 @@ Cara baca flag-nya di Wireshark: klik paket balasan dari Knights, expand bagian 
 - Kalau isinya `0x014 (RST, ACK)` → port tertutup
 
 ##### Screenshot bukti
+![Uploading WhatsApp Image 2026-09-15 at 16.21.29.jpeg…]()
+
 
 Ambil 3 screenshot, masing-masing menunjukkan paket balasan dari Knights dengan Packet Details Pane ter-expand di bagian TCP Flags:
 
 1. **Balasan port 22** → tunjukkan flag `SYN, ACK`
+   <img width="1600" height="898" alt="WhatsApp Image 2026-09-15 at 16 28 08" src="https://github.com/user-attachments/assets/294c311d-7778-4264-9b10-8b74e7cd368f" />
+  
 2. **Balasan port 80** → tunjukkan flag `SYN, ACK`
-3. **Balasan port 7777** → tunjukkan flag `RST, ACK`
+   <img width="1600" height="899" alt="WhatsApp Image 2026-09-15 at 16 27 35" src="https://github.com/user-attachments/assets/6b936233-a293-4150-8cbd-dd15d6efa3d9" />
 
+3. **Balasan port 7777** → tunjukkan flag `RST, ACK`
+   <img width="1600" height="899" alt="WhatsApp Image 2026-09-15 at 16 26 56" src="https://github.com/user-attachments/assets/ab8d2410-82cb-42c8-a010-0d3a23593cb7" />
 
 ###### Hentikan & simpan capture
 
@@ -1406,10 +1419,44 @@ Klik kanan salah satu paket SSH → **Follow → TCP Stream**. Bandingkan dengan
 
 ###### screenshot Bukti
 1. Output `ssh -i ...` yang berhasil login **tanpa diminta password**
+   <img width="1123" height="360" alt="WhatsApp Image 2026-09-16 at 07 52 31" src="https://github.com/user-attachments/assets/def40737-931d-4f19-be7b-74a0515526d8" />
+
+   <img width="750" height="339" alt="WhatsApp Image 2026-09-16 at 08 12 55" src="https://github.com/user-attachments/assets/45fb6054-5233-4d44-b722-43e359e4e134" />
+
+
 2. Isi `/etc/ssh/sshd_config` yang menunjukkan `PasswordAuthentication no`
+   <img width="735" height="164" alt="WhatsApp Image 2026-09-15 at 16 36 58" src="https://github.com/user-attachments/assets/a71a2348-ee28-412c-bccb-ef40b12ee7fb" />
+
 3. Wireshark — paket **Protocol Version Exchange**
+   client:
+   
+   <img width="1600" height="839" alt="WhatsApp Image 2026-09-16 at 08 18 19" src="https://github.com/user-attachments/assets/b2126545-e482-4b8b-afc5-35beebbea25a" />
+
+   server:
+
+   <img width="1600" height="846" alt="WhatsApp Image 2026-09-16 at 08 18 57" src="https://github.com/user-attachments/assets/6e4e03e0-91a7-4c69-8366-a2af71031304" />
+
 4. Wireshark — paket **Key Exchange Init**
-5. Wireshark — salah satu paket **Encrypted Packet** setelah KEX
+   
+client:
+
+<img width="1600" height="846" alt="WhatsApp Image 2026-09-16 at 08 21 29" src="https://github.com/user-attachments/assets/64ed6e70-1c1f-49f7-ba20-9a5ff15dfdd3" />
+
+ server:
+ 
+   <img width="1600" height="844" alt="WhatsApp Image 2026-09-16 at 08 22 08" src="https://github.com/user-attachments/assets/e82be9bc-b396-4aa1-bb70-4e405d4bbdbb" />
+
+5. Wireshark — salah satu paket **Key Exchange** 
+
+   client:
+    <img width="1600" height="849" alt="WhatsApp Image 2026-09-16 at 08 48 24" src="https://github.com/user-attachments/assets/ea331270-04b8-4be8-b601-f81a292d2e12" />
+
+    server:
+   <img width="1600" height="846" alt="WhatsApp Image 2026-09-16 at 08 50 38" src="https://github.com/user-attachments/assets/5e42afe0-a9a8-4329-808c-6d770885b18f" />
+
+6. Wireshark — salah satu paket **Key Exchange ** **Encrypted Packet** setelah KEX
+   <img width="1600" height="839" alt="WhatsApp Image 2026-09-16 at 08 52 55" src="https://github.com/user-attachments/assets/ed278fd0-f338-42be-8577-bcc720526c81" />
+
 
 ###### Hentikan & simpan capture
 
@@ -1508,13 +1555,27 @@ Screenshot Packet List Pane ini (dengan filter `http.response.code == 401` kelih
 
 ---
 
-**Ringkasan screenshot yang perlu dikumpulkan:**
+**screenshot Bukti:**
 1. Packet List dengan filter `http.request.method == "POST"` aktif
-2. Follow HTTP/TCP Stream yang menunjukkan request+response **200 OK** berisi kredensial berhasil
-3. Packet Details dengan header `Server: Apache/2.4.62` ter-expand
-4. Packet List dengan filter `http.response.code == 401` menunjukkan banyaknya percobaan gagal
+   
+<img width="1600" height="839" alt="WhatsApp Image 2026-09-16 at 11 29 10" src="https://github.com/user-attachments/assets/612133ec-e5ba-45f0-b7b0-356e4cc73669" />
 
-Step selanjutnya — validasi ke socket server:
+2. Follow HTTP/TCP Stream yang menunjukkan request+response **200 OK** berisi kredensial berhasil
+
+<img width="1600" height="836" alt="WhatsApp Image 2026-09-16 at 11 38 03" src="https://github.com/user-attachments/assets/1fea3e26-e71c-405c-a6ee-9e0b395a9c2e" />
+
+3. Packet Details dengan header `Server: Apache/2.4.62` ter-expand
+
+   <img width="1284" height="1014" alt="WhatsApp Image 2026-09-16 at 11 38 54" src="https://github.com/user-attachments/assets/84bdd04a-db48-47fa-bdea-32354c830f35" />
+
+   kredensial yang berhasil:
+
+   <img width="1284" height="1014" alt="WhatsApp Image 2026-09-16 at 11 38 54 (1)" src="https://github.com/user-attachments/assets/765b9ea4-7107-4282-a0d3-2fa21a941027" />
+
+5. Packet List dengan filter `http.response.code == 401` menunjukkan banyaknya percobaan gagal
+<img width="1002" height="619" alt="WhatsApp Image 2026-09-16 at 11 39 26" src="https://github.com/user-attachments/assets/591cdd1d-d2d0-44c6-98cd-57dcad720bc5" />
+
+###### Step selanjutnya — validasi ke socket server:
 
 nc [IP_Group] 3401
 
@@ -1535,6 +1596,9 @@ Socket ini akan menanyakan beberapa field satu per satu (IP penyerang, IP:port t
 | **Info tambahan** | `X-Powered-By: PHP/8.3.14` |
 
 screenshot Bukti:
+
+<img width="1002" height="619" alt="WhatsApp Image 2026-09-16 at 11 39 26" src="https://github.com/user-attachments/assets/32a6ad52-735d-442f-9128-ab95b203aee4" />
+<img width="1600" height="841" alt="WhatsApp Image 2026-09-16 at 13 01 10" src="https://github.com/user-attachments/assets/7248abb4-8607-4629-8b2a-4def7179dc70" />
 
 ----
 soal 15
@@ -1631,10 +1695,17 @@ Karena manual decode 30 paket capek, kamu bisa:
 
 ## Step 5 — Screenshot yang wajib buat laporan
 
-1. Paket **USB Device Descriptor** — expand, tunjukkan `idVendor` & `idProduct`
-2. Paket yang tunjukkin **Device: 7** (device address setelah enumerasi)
-3. Beberapa contoh paket **Interrupt Transfer** dengan data tidak nol (bukti proses decode keystroke)
-4. Ringkasan akhir: tulis di laporan "hasil decode 8-byte HID report satu-persatu menghasilkan pesan: **Wired_Protocol_7_is_alive_2026**"
+Cari Vendor ID & Product ID (deskriptor device)
+
+<img width="1600" height="834" alt="WhatsApp Image 2026-09-16 at 13 12 29" src="https://github.com/user-attachments/assets/68df50dc-e7ab-4077-9527-3053ac506dbe" />
+
+Paket **USB Device Descriptor** — expand, tunjukkan `idVendor` & `idProduct`
+
+   <img width="1600" height="834" alt="WhatsApp Image 2026-09-16 at 13 12 29" src="https://github.com/user-attachments/assets/488b0d47-d2f3-42bf-b926-90126bae3003" />
+   
+Paket yang tunjukkin **Device: 7** (device address setelah enumerasi)
+<img width="1600" height="839" alt="WhatsApp Image 2026-09-16 at 13 20 36" src="https://github.com/user-attachments/assets/3b591dd1-a54b-4505-b757-8b650ca9aa1b" />
+
 
 ## Step 6 — Validasi ke socket server
 
@@ -1653,8 +1724,10 @@ Socket ini akan menanyakan beberapa field satu per satu (IP penyerang, IP:port t
 | **Pesan rahasia dari keystroke** | `Wired_Protocol_7_is_alive_2026` |
 
 Screenshot Bukti:
+<img width="1150" height="1006" alt="WhatsApp Image 2026-09-16 at 13 30 58" src="https://github.com/user-attachments/assets/ac65cb0c-b950-410d-b257-26a9f979c3b2" />
 
-soal 16
+---
+### soal 16
 
 Untuk menganalisis file capture `wired_ftp_theft.pcap` ([link](https://drive.google.com/drive/folders/1qBeAXVx1MG14L0jzGefqs3t8qO8VRMmb?usp=sharing)) guna menemukan IP server FTP penyerang, banner software FTP, kredensial login penyerang, serta ukuran file malware `knights_payload.exe` — lalu validasi temuan lewat `nc [IP_Group] 3403`.
 
@@ -1738,13 +1811,22 @@ Ini juga menyebutkan ukuran yang sama, jadi saling menguatkan.
 2. Pilih **Follow → TCP Stream**.
 3. Jendela baru muncul menampilkan seluruh command-response FTP dalam satu tampilan teks — dari `USER knights_agent` sampai `226 Transfer complete.`. Screenshot ini sebagai bukti utama paling lengkap.
 
-## Step 7 — Rangkuman screenshot yang wajib ada di laporan
+##  screenshot Bukti
 
 1. Banner: `220 Welcome to Wired FTP Server (vsftpd 3.0.5)` + IP source `198.51.100.7`
-2. `USER knights_agent` dan `PASS N4v1_s3cur3_2026`
-3. `230 Login successful.`
-4. `SIZE knights_payload.exe` → `213 524288`
-5. (Opsional tapi bagus) Follow TCP Stream keseluruhan sesi
+   <img width="1600" height="844" alt="WhatsApp Image 2026-09-16 at 13 56 30" src="https://github.com/user-attachments/assets/c8138198-b4ba-4759-91b1-fc7008f69d6e" />
+
+3. `USER knights_agent` dan `PASS N4v1_s3cur3_2026`
+   <img width="1438" height="1020" alt="WhatsApp Image 2026-09-16 at 14 04 54" src="https://github.com/user-attachments/assets/b5d7e47b-771f-405e-aa23-fc0d4620ba3a" />
+
+5. `230 Login successful.`
+   <img width="1600" height="839" alt="WhatsApp Image 2026-09-16 at 13 58 53" src="https://github.com/user-attachments/assets/2f83c57c-e20a-4a18-9e31-feffb1fcf90b" />
+
+6. `SIZE knights_payload.exe` → `213 524288`
+   <img width="1600" height="846" alt="WhatsApp Image 2026-09-16 at 14 01 25" src="https://github.com/user-attachments/assets/9671c979-ecdd-48ba-8803-041507891fb2" />
+
+8. (Opsional tapi bagus) Follow TCP Stream keseluruhan sesi
+   <img width="1600" height="841" alt="WhatsApp Image 2026-09-16 at 14 01 46" src="https://github.com/user-attachments/assets/7dc239be-2f30-4581-809b-7ea19fee7b09" />
 
 ## Step 8 — Simpan bukti
 
@@ -1767,10 +1849,11 @@ Socket ini akan menanyakan beberapa field satu per satu (IP penyerang, IP:port t
 | **Kredensial login yang berhasil** | Username: `knights_agent`, Password: `N4v1_s3cur3_2026` |
 | **Ukuran file `knights_payload.exe`** | **524288 bytes** (= 512 KB) |
 
-
 Screenshot Bukti:
+<img width="1147" height="1006" alt="WhatsApp Image 2026-09-16 at 14 13 29" src="https://github.com/user-attachments/assets/402f5d19-c74b-4b30-b6e1-0b37480b6f9b" />
 
-soal 17
+---
+### soal 17
 
 Untuk menganalisis file capture `wired_http_c2.pcap` ([link](https://drive.google.com/drive/folders/1iPYESj5AN-uXYXfD2Wo2cRrm_Rigr_D6?usp=sharing)) guna menemukan domain (Host) sumber malware, IP server penyerang, nama file executable malware, serta kode status HTTP — lalu validasi temuan lewat `nc [IP_Group] 3404`.
 
@@ -1822,7 +1905,26 @@ dan
 ```
 Content-Disposition: attachment; filename="navi_agent.exe"
 ```
-5. **Screenshot panel tengah ini** — sudah cukup buat bukti kode status DAN nama file sekaligus.
+
+**Screenshot Bukti:**
+
+ip server penyerang
+
+<img width="1600" height="891" alt="WhatsApp Image 2026-09-16 at 16 06 31" src="https://github.com/user-attachments/assets/21169ff0-561e-4f5a-9d03-488b35a3c45b" />
+
+nama file malware
+
+<img width="1600" height="899" alt="WhatsApp Image 2026-09-16 at 16 08 34" src="https://github.com/user-attachments/assets/d17f059a-7c5e-45bd-af11-8262e2a99676" />
+
+bukti status code http
+
+<img width="1600" height="899" alt="WhatsApp Image 2026-09-16 at 16 12 25" src="https://github.com/user-attachments/assets/b6c1a757-3ed8-4c0d-bb6e-63498de1ae26" />
+
+percakapan request client dan server
+
+<img width="1288" height="1079" alt="WhatsApp Image 2026-09-16 at 16 14 50" src="https://github.com/user-attachments/assets/6d7c0775-ede8-490c-8196-a7ad64e0b6a2" />
+
+<img width="1600" height="899" alt="WhatsApp Image 2026-09-16 at 16 18 50" src="https://github.com/user-attachments/assets/136bf5e9-c445-421a-8c36-3eedfdec12c9" />
 
 ### Step 7 — Lihat percakapan lengkap (opsional tapi bagus)
 1. Klik kanan (klik tombol kanan mouse) pada baris `GET /navi_agent.exe` tadi.
@@ -1850,18 +1952,148 @@ Socket ini akan menanyakan beberapa field satu per satu (IP penyerang, IP:port t
 | Nama file malware | `navi_agent.exe` |
 | Kode status HTTP | `200` |
 
-
-
 Screenshot Bukti:
 
-soal 18
+<img width="862" height="727" alt="WhatsApp Image 2026-09-16 at 16 26 18" src="https://github.com/user-attachments/assets/6209b0bf-8cd4-41eb-b9a8-09118a3fa791" />
+
+---
+### soal 18
 
 Untuk menganalisis file capture `wired_smb_transfer.pcapng` ([link](https://drive.google.com/file/d/1XBtKWtNM_RrSBTp2e3O5vBdiklcPNsKs/view?usp=sharing)) guna menemukan protokol yang dieksploitasi, IP pengirim & penerima, folder tujuan malware, serta nama file executable-nya — lalu validasi temuan lewat `nc [IP_Group] 3405`.
 
-soal 19
+ Screenshot Bukti:
+ 
+ SMB2
+ 
+<img width="1600" height="887" alt="WhatsApp Image 2026-09-16 at 16 37 47" src="https://github.com/user-attachments/assets/303c9f43-7983-480f-ac80-e6a67cc96d2e" />
+
+field dialect
+
+<img width="1600" height="896" alt="WhatsApp Image 2026-09-16 at 16 39 20" src="https://github.com/user-attachments/assets/185aeeeb-504c-48f5-ba9c-e090295aa1fa" />
+
+ip pengirim dan penerima
+
+<img width="1600" height="899" alt="WhatsApp Image 2026-09-16 at 16 40 46" src="https://github.com/user-attachments/assets/09774a0a-753b-44be-b5f6-63fe980d8d6b" />
+
+tree connect request
+
+<img width="1600" height="902" alt="WhatsApp Image 2026-09-16 at 16 42 08" src="https://github.com/user-attachments/assets/da075e31-2094-4334-a6c4-8cfce042c8f1" />
+
+nama file malware
+
+<img width="1600" height="899" alt="WhatsApp Image 2026-09-16 at 16 43 19" src="https://github.com/user-attachments/assets/7a960c58-58c9-4812-b0ac-69209bd1f3c8" />
+
+## Validasi ke socket server
+
+### Step 9 — Jalankan
+
+Sekarang coba jalankan:
+```
+nc 10.4.89.247 3405
+
+```
+Tekan Enter.
+
+Socket ini akan menanyakan beberapa field satu per satu (IP penyerang, IP:port target, password, versi server). Jalankan dulu, lalu muncul di layar prompt pertanyaannya.
+
+## Hasil Analisis `soal18
+
+Screenshot Bukti:
+
+<img width="954" height="1077" alt="WhatsApp Image 2026-09-16 at 16 50 49" src="https://github.com/user-attachments/assets/338cf973-e6f6-4bd0-af60-adda65630471" />
+
+---
+### soal 19
 
 Untuk menganalisis file capture `wired_smtp_threat.pcap` ([link](https://drive.google.com/drive/folders/1RAW0cMoGDDStPyFHeJ_0t9kkoLGBsCmH?usp=sharing)) guna menemukan email korban, password yang diklaim bocor, jenis malware, batas waktu (hari), serta MailClientID — lalu validasi temuan lewat `nc [IP_Group] 3406`.
+
+Screenshot Bukti:
+
+ SMTP AWAL
+
+ <img width="1600" height="899" alt="WhatsApp Image 2026-09-16 at 17 04 33" src="https://github.com/user-attachments/assets/4a4a19b3-f60a-46ee-85d9-9a38fc253362" />
+ 
+converstation sus
+
+<img width="1600" height="901" alt="WhatsApp Image 2026-09-16 at 17 06 34" src="https://github.com/user-attachments/assets/5f5b6225-42ab-4f50-b348-53dfbe09b0f3" />
+
+
+filter ip addr == 203.0.113.100
+
+<img width="1600" height="898" alt="WhatsApp Image 2026-09-16 at 17 10 00" src="https://github.com/user-attachments/assets/311e9895-effa-49fa-aae1-4034d54ab303" />
+
+isi pesan attacker
+
+<img width="1600" height="898" alt="WhatsApp Image 2026-09-16 at 17 11 41" src="https://github.com/user-attachments/assets/df0864eb-67ba-4e79-a5f4-5aaa8669efe8" />
+
+## Validasi ke socket server
+
+### Step 9 — Jalankan
+
+Sekarang coba jalankan:
+```
+nc 10.4.89.247 3406
+
+```
+Tekan Enter.
+
+Socket ini akan menanyakan beberapa field satu per satu (IP penyerang, IP:port target, password, versi server). Jalankan dulu, lalu muncul di layar prompt pertanyaannya.
+
+## Hasil Analisis `soal19
+
+Screenshot Bukti:
+
+<img width="1170" height="605" alt="WhatsApp Image 2026-09-16 at 17 16 49" src="https://github.com/user-attachments/assets/0e6254db-4343-4371-968f-281b7856fddf" />
+
+---
 
 soal 20
 
 Untuk menganalisis file capture `wired_tls_decrypt.pcapng` bersama `keyslogfile.txt` ([link](https://drive.google.com/file/d/1F7xN3ydIrA-pZaCb32MGseVeHKt-D_qZ/view?usp=sharing)) guna menemukan versi TLS, domain (SNI), IP server HTTPS penyerang, User-Agent, serta method & path HTTP tersembunyi — lalu validasi temuan lewat `nc [IP_Group] 3407`.
+
+Screenshot Bukti:
+
+version
+
+<img width="1600" height="900" alt="WhatsApp Image 2026-09-16 at 17 21 45" src="https://github.com/user-attachments/assets/a35cedb0-4deb-4ae6-8e9e-a8f5a8b7e783" />
+
+server name
+
+<img width="1600" height="898" alt="WhatsApp Image 2026-09-16 at 17 26 53" src="https://github.com/user-attachments/assets/5989dfa5-7d98-492a-8148-5d8edaee84c9" />
+
+filter http
+
+<img width="1333" height="1077" alt="WhatsApp Image 2026-09-16 at 17 31 25" src="https://github.com/user-attachments/assets/81a41fe2-510d-469b-9f84-c9a2c8cb6fb7" />
+
+User Agent
+
+<img width="1600" height="899" alt="WhatsApp Image 2026-09-16 at 17 32 17" src="https://github.com/user-attachments/assets/8d94062c-63ad-4e33-962d-20bd11c59c3b" />
+
+TLS
+
+<img width="858" height="707" alt="WhatsApp Image 2026-09-16 at 17 42 31" src="https://github.com/user-attachments/assets/65ba9045-c0dd-4279-9f17-e7d968ec665d" />
+
+FILTER TLS
+
+<img width="1331" height="1074" alt="WhatsApp Image 2026-09-16 at 17 43 23" src="https://github.com/user-attachments/assets/4a7f87b7-27da-48a6-9428-73a7c5cf48b8" />
+
+## Validasi ke socket server
+
+### Step 9 — Jalankan
+
+Sekarang coba jalankan:
+```
+nc 10.4.89.247 3407
+
+```
+Tekan Enter.
+
+Socket ini akan menanyakan beberapa field satu per satu (IP penyerang, IP:port target, password, versi server). Jalankan dulu, lalu muncul di layar prompt pertanyaannya.
+
+## Hasil Analisis `soal20
+
+Screenshot Bukti:
+
+<img width="965" height="685" alt="WhatsApp Image 2026-09-16 at 17 49 59" src="https://github.com/user-attachments/assets/09bef642-beca-4cdd-9cbb-aba0526e10c6" />
+
+---
