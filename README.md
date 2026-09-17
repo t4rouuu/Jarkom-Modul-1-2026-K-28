@@ -1,4 +1,4 @@
-﻿# Jarkom-Modul-1-2026-K-28
+<img width="1600" height="899" alt="WhatsApp Image 2026-09-15 at 14 16 41" src="https://github.com/user-attachments/assets/597169a2-d636-486d-9117-35a4db074101" />﻿# Jarkom-Modul-1-2026-K-28
 
 ## Kelompok K-28
 
@@ -580,13 +580,236 @@ Masukkan username `eiri` → harus langsung muncul penolakan seperti **"530 Perm
 <img width="446" height="95" alt="WhatsApp Image 2026-09-15 at 13 41 52" src="https://github.com/user-attachments/assets/b9852802-2f2d-411c-bb6d-15182626f71b" />
 
 ---
-soal 8
+### soal 8
 
 Untuk melakukan koneksi FTP dari node Knights ke FTP Server Chisa memakai akun alice, mengupload file ([link](https://drive.google.com/drive/folders/1tvZpueSH9E3GWwXM6KNnM64Y5wNoIAYP?usp=sharing)), lalu menganalisis sesi Wireshark untuk menemukan perintah STOR, kode status 226, dan port data TCP mode PASV.
 
-soal 9
+###### Mendowlod file laporan di Knights
+
+Buka konsol Knights, buat filenya:
+
+```
+nano /root/knights_report.txt
+```
+
+Isi dengan teks laporan (ganti prefix IP sesuai kelompok). Simpan (`Ctrl+O`, Enter, `Ctrl+X`), lalu cek:
+
+```
+cat /root/knights_report.txt
+```
+
+###### Menyalakan Wireshark DULU (sebelum FTP jalan)
+
+Sama seperti soal 6, capture-nya lewat GNS3:
+1. Pilih salah satu link: **Knights ↔ Switch3** atau **Chisa ↔ Switch2**
+2. Klik kanan kabelnya → **Start capture** → centang visualisasi → OK
+3. Wireshark otomatis terbuka
+4. Ketik filter di kolom display filter (biar nanti gampang baca):
+   
+   ```
+   ftp or ftp-data
+   ```
+
+###### Mengupload file dari Knights pakai akun Alice
+
+Balik ke konsol Knights:
+
+```
+lftp [IP_CHISA]
+```
+
+Login pakai `alice` + passwordnya, lalu upload:
+
+```
+lftp> put /root/knights_report.txt
+```
+
+Setelah selesai:
+```
+lftp> bye
+```
+
+###### Cek file sudah sampai di Chisa
+
+```
+ls -la /var/wired/data/
+```
+
+Harus muncul `knights_report.txt`.
+
+###### Mencari 3 bukti di Wireshark
+
+Dengan filter `ftp or ftp-data` masih aktif, cari 3 hal ini di Packet List:
+
+###### A. Perintah STOR (upload command)
+
+Cari paket dengan info `STOR knights_report.txt` → expand bagian *File Transfer Protocol (FTP)* untuk lihat detailnya.
+
+###### B. Kode 226 (transfer sukses)
+
+Cari paket setelahnya dengan info `226 Transfer complete.` → artinya file sudah 100% terkirim.
+
+###### C. Port data PASV 
+
+Cari paket sebelum STOR dengan info seperti:
+
+```
+227 Entering Passive Mode (h1,h2,h3,h4,p1,p2)
+```
+
+Port datanya dihitung dari 2 angka terakhir dengan rumus:
+
+```
+port = (p1 × 256) + p2
+```
+
+Contoh: `(192,225,2,2,196,80)` → port = (196×256)+80 = **50256**
+
+###### Screenshot & simpan bukti
+
+Ambil screenshot yang menunjukkan (dengan Packet Details ter-expand):
+1. Paket **STOR knights_report.txt**
+   
+   <img width="694" height="295" alt="WhatsApp Image 2026-09-15 at 14 10 37" src="https://github.com/user-attachments/assets/e50ec1fc-bea2-4acb-aba1-d219406e5421" />
+   
+   <img width="1600" height="899" alt="WhatsApp Image 2026-09-15 at 14 15 53" src="https://github.com/user-attachments/assets/aed3b316-e30d-420c-8f9d-5a0a0a92a034" />
+
+2. Paket **226 Transfer complete**
+
+    <img width="1600" height="899" alt="WhatsApp Image 2026-09-15 at 14 16 41" src="https://github.com/user-attachments/assets/1c77f3e6-b729-48fb-b9c9-61d141c525ed" />
+
+   
+3. Paket **227 Entering Passive Mode** (buat ambil angka portnya)
+   
+<img width="1600" height="898" alt="WhatsApp Image 2026-09-15 at 14 17 52" src="https://github.com/user-attachments/assets/a24d49b7-1988-4a36-a2f3-e76bb3bbea10" />
+
+<img width="1600" height="899" alt="WhatsApp Image 2026-09-15 at 14 19 37" src="https://github.com/user-attachments/assets/ad101d05-496f-4467-9422-a9d0583a5f7e" />
+
+###### Hentikan & simpan capture**
+
+1. Klik kanan kabel yang sama di GNS3 → **Stop capture**
+2. Di Wireshark: **File → Save As**, simpan dengan nama jelas, misal:
+   ```
+   soal8-knights-upload.pcapng
+   ```
+---
+### soal 9
 
 Untuk mengunduh dokumen Protokol Tujuh ([link](https://drive.google.com/drive/folders/1S3hG0dnZBTkCta4uILWwKVc6dSYYGRJ6?usp=sharing)) dari FTP Server Chisa memakai akun mika, lalu membuktikan pembatasan read-only dengan mencoba upload file baru dan menunjukkan pesan error 550 Permission denied.
+
+###### Menyiapkan file manifesto di Chisa
+
+Karena Mika tidak boleh upload, file ini harus sudah ada duluan di server. Buat langsung di konsol Chisa:
+
+```
+nano /var/wired/data/protocol7_manifesto.txt
+```
+
+Isi dengan teks manifesto (sesuai soal). 
+
+Simpan (`Ctrl+O`, Enter, `Ctrl+X`).
+
+Pastikan filenya bisa dibaca semua user:
+
+```
+chmod 644 /var/wired/data/protocol7_manifesto.txt
+ls -la /var/wired/data/
+```
+
+###### Menyalakan Wireshark dulu
+
+Sama seperti soal sebelumnya:
+1. Klik kanan kabel **Mika ↔ Switch1** (atau Chisa ↔ Switch2) di GNS3
+2. **Start capture** → centang visualisasi → OK
+3. Di kolom filter Wireshark, ketik:
+   
+   ```
+   lftp or ftp-data
+   ```
+
+###### Mika download file (harus BERHASIL)
+
+Di konsol Mika:
+
+```
+lftp [IP_CHISA]
+```
+
+Login pakai `mika` + passwordnya, lalu:
+
+```
+lftp> get protocol7_manifesto.txt
+lftp> bye
+```
+
+Cek hasilnya di luar sesi FTP:
+
+```
+cat protocol7_manifesto.txt
+```
+
+Pastikan isinya sama persis dengan yang di server.
+
+###### Mika coba upload (harus GAGAL)
+
+Buat file dummy dulu:
+
+```
+echo "coba upload dari mika" > /root/test_mika.txt
+```
+
+Login FTP lagi sebagai mika:
+
+```
+lftp [IP_CHISA]
+```
+
+Coba upload:
+
+```
+lftp> put /root/test_mika.txt
+```
+
+➡️ Karena Mika sudah di-set `write_enable=NO` (dari Soal 7), harusnya muncul error seperti:
+
+```
+550 Permission denied.
+```
+
+Keluar:
+
+```
+ftp> bye
+```
+
+###### mencari 2 bukti di Wireshark
+
+Dengan filter `ftp or ftp-data` masih aktif, cari:
+
+1. **Perintah RETR**
+
+   (waktu download berhasil) → paket dengan info:
+   
+   ```
+   RETR protocol7_manifesto.txt
+   ```
+
+2. **Perintah STOR + penolakan**
+   
+   (waktu upload gagal) → dua paket:
+   - `STOR test_mika.txt`
+   - Balasan server: `550 Permission denied.`
+
+Klik kedua paket ini, expand bagian *File Transfer Protocol (FTP)* di Packet Details.
+
+
+###### Hentikan & simpan capture**
+
+1. Klik kanan kabel yang sama di GNS3 → **Stop capture**
+2. Di Wireshark: **File → Save As**, simpan dengan nama jelas, misal:
+   ```
+   soal9-mika-readonly.pcapng
+   ```
 
 soal 10
 
