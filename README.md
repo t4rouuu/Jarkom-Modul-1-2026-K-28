@@ -102,7 +102,7 @@ iface eth0 inet static
 
 Mika
 
-```auto eth0
+``` auto eth0
 iface eth0 inet static
     address 192.225.1.3
     netmask 255.255.255.0
