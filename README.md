@@ -1774,6 +1774,86 @@ soal 17
 
 Untuk menganalisis file capture `wired_http_c2.pcap` ([link](https://drive.google.com/drive/folders/1iPYESj5AN-uXYXfD2Wo2cRrm_Rigr_D6?usp=sharing)) guna menemukan domain (Host) sumber malware, IP server penyerang, nama file executable malware, serta kode status HTTP — lalu validasi temuan lewat `nc [IP_Group] 3404`.
 
+## Bagian A — Buka & analisis di Wireshark
+
+### Step 1 — Buka file
+1. Buka aplikasi **Wireshark** di komputer kamu.
+2. Klik **File** → **Open**.
+3. Cari file `soal17_wired_http_c2__1_.pcapng` (atau nama file yang kamu punya), klik **Open**.
+
+### Step 2 — Filter cuma paket HTTP
+1. Klik kolom putih panjang di bagian atas (kolom filter).
+2. Ketik:
+```
+http
+```
+3. Tekan **Enter**.
+4. Sekarang tabel di atas cuma menampilkan beberapa baris (bukan ratusan) — ini paket-paket HTTP.
+
+### Step 3 — Cari request yang mencurigakan
+1. Lihat kolom **Info** di tiap baris tabel.
+2. Kamu akan lihat beberapa baris berbeda (beberapa Host berbeda). Cari baris yang tulisannya:
+```
+GET /navi_agent.exe HTTP/1.1
+```
+3. **Klik sekali** di baris itu (klik di area barisnya, nanti jadi biru/ke-highlight).
+
+### Step 4 — Catat IP server
+1. Masih di baris yang sama, lihat kolom **Destination** — itu IP server penyerangnya.
+2. Akan tertulis: `203.0.113.42`
+
+### Step 5 — Cari respons dari server
+1. Di tabel yang sama, cari baris **setelahnya** (nomor lebih besar) yang Info-nya:
+```
+HTTP/1.1 200 OK
+```
+dan sumbernya (**Source**) dari `203.0.113.42`.
+2. **Klik sekali** di baris itu.
+
+### Step 6 — Buka detail di panel tengah
+1. Setelah baris response itu di-klik, lihat ke **panel tengah** (Packet Details Pane) — ada beberapa baris dengan tanda panah `>` di kiri.
+2. Cari baris **"Hypertext Transfer Protocol"**.
+3. Klik tanda panah `>` di sebelah kirinya biar terbuka (expand).
+4. Sekarang akan muncul detailnya, termasuk baris:
+```
+HTTP/1.1 200 OK\r\n
+```
+dan
+```
+Content-Disposition: attachment; filename="navi_agent.exe"
+```
+5. **Screenshot panel tengah ini** — sudah cukup buat bukti kode status DAN nama file sekaligus.
+
+### Step 7 — Lihat percakapan lengkap (opsional tapi bagus)
+1. Klik kanan (klik tombol kanan mouse) pada baris `GET /navi_agent.exe` tadi.
+2. Arahkan ke **Follow** → klik **HTTP Stream**.
+3. Jendela baru muncul, tunjukkan seluruh request+response jadi satu teks. **Screenshot ini juga.**
+
+## Validasi ke socket server
+
+### Step 9 — Jalankan
+
+Sekarang coba jalankan:
+```
+nc 10.4.89.247 3404
+```
+Tekan Enter.
+
+Socket ini akan menanyakan beberapa field satu per satu (IP penyerang, IP:port target, password, versi server). Jalankan dulu, lalu muncul di layar prompt pertanyaannya.
+
+## Hasil Analisis `soal17_wired_http_c2.pcapng`
+
+| Yang dicari | Jawaban |
+|---|---|
+| Domain (Host) | `wired-update.net` |
+| IP server penyerang | `203.0.113.42` |
+| Nama file malware | `navi_agent.exe` |
+| Kode status HTTP | `200` |
+
+
+
+Screenshot Bukti:
+
 soal 18
 
 Untuk menganalisis file capture `wired_smb_transfer.pcapng` ([link](https://drive.google.com/file/d/1XBtKWtNM_RrSBTp2e3O5vBdiklcPNsKs/view?usp=sharing)) guna menemukan protokol yang dieksploitasi, IP pengirim & penerima, folder tujuan malware, serta nama file executable-nya — lalu validasi temuan lewat `nc [IP_Group] 3405`.
