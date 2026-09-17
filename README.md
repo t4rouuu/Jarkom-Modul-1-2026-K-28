@@ -100,43 +100,45 @@ iface eth0 inet static
 
 <img width="959" height="225" alt="image" src="https://github.com/user-attachments/assets/3fb6adce-7743-4804-b2ea-683b91e8f5e4" />
 
-Mika
+
+###### Mika
 
 ``` auto eth0
 iface eth0 inet static
     address 192.225.1.3
     netmask 255.255.255.0
     gateway 192.225.1.1
-    ```
+```
 <img width="959" height="230" alt="image" src="https://github.com/user-attachments/assets/4afb5358-2abf-4885-bf70-724f35b76339" />
 
-Chisa
+###### Chisa
 
 ```auto eth0
 iface eth0 inet static
     address 192.225.2.2
     netmask 255.255.255.0
     gateway 192.225.1.1
-    ```
+```
 <img width="959" height="226" alt="image" src="https://github.com/user-attachments/assets/0c2e7855-3952-41ea-a939-8b456ed9a793" />
 
-knights
+###### knights
+
 ```auto eth0
 iface eth0 inet static
     address 192.225.3.2
     netmask 255.255.255.0
     gateway 192.225.1.1
-    ```
+```
 <img width="959" height="230" alt="image" src="https://github.com/user-attachments/assets/28322479-90bd-49ac-b423-22f34e3d89cb" />
 
-Eiri
+###### Eiri
 
 ```auto eth0
 iface eth0 inet static
     address 192.225.3.3
     netmask 255.255.255.0
     gateway 192.225.1.1
-    ```
+```
 <img width="959" height="234" alt="image" src="https://github.com/user-attachments/assets/1f7372be-50cd-4b09-aca5-483fe6d3466a" />
 
 ###### 2. Merestart networking / reboot node
