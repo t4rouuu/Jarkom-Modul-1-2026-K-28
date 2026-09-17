@@ -14,17 +14,20 @@ Untuk mempersiapkan pembangunan The Wired, kita membangun topologi jaringan The 
 ##### Bangun Topologi:
 
 **Langkah 1: Siapkan node-nya**
+
 Tarik ke workspace GNS3:
 - 1 Router (kasih 4 adapter/interface)
 - 1 NAT node
 - 3 Switch (Ethernet switch)
 - 5 Client (1 adapter aja tiap client)
 
-**Langkah 2: Kasih nama biar gak bingung**
+**Langkah 2: Kasih nama sesuai soal**
+
 Rename semua node sesuai perannya:
 `Router-Lain`, `Switch1`, `Switch2`, `Switch3`, `Alice`, `Mika`, `Chisa`, `Knights`, `Eiri`
 
 **Langkah 3: Sambungkan kabelnya**
+
 - NAT → Router-Lain (di eth0)
 - Switch1 → Router-Lain (di eth1), lalu Switch1 → Alice, dan Switch1 → Mika
 - Switch2 → Router-Lain (di eth2), lalu Switch2 → Chisa
@@ -33,6 +36,7 @@ Rename semua node sesuai perannya:
 *(Jadi Router-Lain punya 4 kaki: 1 ke NAT, 3 ke masing-masing switch)*
 
 **Langkah 4: Setting IP di tiap node**
+
 Edit file `/etc/network/interfaces` di setiap node sesuai IP yang sudah ditentukan kelompok kalian. Contoh settingan Router-Lain ada di Fase 2, dan contoh settingan Client polanya sama seperti di modul bagian 2.7.2 — tinggal disesuaikan IP dan interface-nya saja.
 
 **Langkah 5: Tes dulu**
@@ -46,6 +50,58 @@ masukkan foto
 soal 2
 
 Untuk menghubungkan Router Lain ke jaringan internet publik melalui NAT/DHCP pada interface eth0, karena The Wired saat itu masih terisolasi dari dunia luar.
+
+**Langkah 1: Edit file konfigurasi**
+
+Buka file `/etc/network/interfaces` di Router-Lain, lalu isi seperti ini:
+
+```
+auto eth0
+iface eth0 inet dhcp
+
+auto eth1
+iface eth1 inet static
+    address 192.225.1.1
+    netmask 255.255.255.0
+
+auto eth2
+iface eth2 inet static
+    address 192.225.2.1
+    netmask 255.255.255.0
+
+auto eth3
+iface eth3 inet static
+    address 192.225.3.1
+    netmask 255.255.255.0
+```
+
+**Penjelasan simpelnya:**
+
+- `eth0` → **dhcp** (otomatis dapat IP dari NAT, ini jalur keluar ke internet)
+- `eth1` → IP tetap `192.225.1.1` (gerbang buat Switch1 → Alice & Mika)
+- `eth2` → IP tetap `192.225.2.1` (gerbang buat Switch2 → Chisa)
+- `eth3` → IP tetap `192.225.3.1` (gerbang buat Switch3 → Knights & Eiri)
+
+**Langkah 2: Restart networking / reboot node** 
+
+biar konfigurasi kepakai.
+
+**Langkah 3: Tes koneksi internet**
+
+Di konsol Router-Lain, ketik:
+```
+ping -c 3 8.8.8.8
+```
+
+**Kalau hasilnya seperti ini:**
+
+masukkan foto
+```
+3 packets transmitted, 3 received, 0% packet loss
+```
+➡️ Berarti Router-Lain **sudah berhasil online** dan siap jadi pintu keluar buat semua Client di bawahnya.
+
+Kalau gagal (`Destination unreachable` atau `100% packet loss`), kemungkinan masalah di NAT node atau eth0 belum dapat IP — cek dengan `ip a` di eth0 dulu.
 
 soal 3
 
