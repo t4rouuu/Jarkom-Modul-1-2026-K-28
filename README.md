@@ -49,7 +49,7 @@ Hasil:
 
 ###### Topologi
 
-<img width="665" height="377" alt="image" src="https://github.com/user-attachments/assets/d289a71c-f67c-45d4-b5b6-1f59de580895" />
+<img width="957" height="406" alt="image" src="https://github.com/user-attachments/assets/7d9b4ff3-df07-47a6-8a0a-ee98bc473473" />
 
 ---
 
