@@ -251,8 +251,6 @@ Di setiap node Client (Alice, Mika, Chisa, Knights, Eiri), ketik:
 echo "nameserver 8.8.8.8" > /etc/resolv.conf
 ```
 
-Ini membuat Client tahu ke mana harus "bertanya" kalau mau translate nama domain (misal `google.com`) jadi IP address.
-
 ###### Tes dari tiap Client
 
 Di konsol masing-masing Client, coba:
@@ -309,7 +307,9 @@ iface eth0 inet dhcp
     up iptables -A FORWARD -i eth0 -m state --state ESTABLISHED,RELATED -j ACCEPT
 ```
 
-**Cara kerjanya:** Baris `up` itu artinya "jalankan perintah ini otomatis setiap kali interface eth0 dinyalakan" jadi walau node di-restart, semua setting NAT & forwarding akan otomatis terpasang lagi tanpa perlu diketik manual.
+**Cara kerjanya:** 
+
+Baris `up` itu artinya "jalankan perintah ini otomatis setiap kali interface eth0 dinyalakan" jadi walau node di-restart, semua setting NAT & forwarding akan otomatis terpasang lagi tanpa perlu diketik manual.
 
 ###### Memindahkan config DNS ke file interfaces (di tiap Client)
 
@@ -338,7 +338,9 @@ EOF
 chmod +x /root/cek_status.sh
 ```
 
-**Fungsinya:** Script ini membuat satu file `cek_status.sh` yang kalau dijalankan, langsung nampilin dua hal sekaligus:
+**Fungsinya:** 
+
+Script ini membuat satu file `cek_status.sh` yang kalau dijalankan, langsung nampilin dua hal sekaligus:
 **Ringkasan interface** (`ip -br a`) → cek IP tiap eth masih terpasang atau tidak
 **Tabel NAT** (`iptables -t nat -L -v -n`) → cek aturan MASQUERADE masih ada atau tidak
 
@@ -352,10 +354,11 @@ chmod +x /root/cek_status.sh
    /root/cek_status.sh
    ```
 3. **Hasil yang diharapkan:**
+   
+   <img width="959" height="337" alt="image" src="https://github.com/user-attachments/assets/1ca3b2f9-ea3c-4e26-b314-a669504b4932" />
 
 IP address di semua interface masih terpasang, dan aturan NAT (MASQUERADE) masih muncul di tabel — tandanya konfigurasi berhasil **bertahan** meski sempat di-restart.
    
-masukkan foto
 
 soal 6
 
