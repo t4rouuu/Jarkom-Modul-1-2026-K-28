@@ -13,7 +13,7 @@ Untuk mempersiapkan pembangunan The Wired, kita membangun topologi jaringan The 
 
 ##### Bangun Topologi:
 
-**Menyiapkan nodenya**
+###### 1. Menyiapkan nodenya
 
 Tarik ke workspace GNS3:
 - 1 Router (kasih 4 adapter/interface)
@@ -21,24 +21,24 @@ Tarik ke workspace GNS3:
 - 3 Switch (Ethernet switch)
 - 5 Client (1 adapter aja tiap client)
 
-**Memberikan nama sesuai soal**
+###### 2. Memberikan nama sesuai soal
 
 Rename semua node sesuai perannya:
 
 `Router-Lain`, `Switch1`, `Switch2`, `Switch3`, `Alice`, `Mika`, `Chisa`, `Knights`, `Eiri`
 
-**Menyambungkan kabelnya**
+###### 3. Menyambungkan kabelnya
 
 - NAT → Router-Lain (di eth0)
 - Switch1 → Router-Lain (di eth1), lalu Switch1 → Alice, dan Switch1 → Mika
 - Switch2 → Router-Lain (di eth2), lalu Switch2 → Chisa
 - Switch3 → Router-Lain (di eth3), lalu Switch3 → Knights, dan Switch3 → Eiri
 
-**Menyeting IP di tiap node**
+###### 4. Menyeting IP di tiap node
 
 Edit file `/etc/network/interfaces` di setiap node sesuai IP yang sudah ditentukan. Contoh settingan Router-Lain ada di Modul Fase 2, dan contoh settingan Client polanya sama seperti di modul bagian 2.7.2  tinggal disesuaikan IP dan interfacenya saja.
 
-**Menguji coba**
+###### 5. Menguji coba
 Menyalakan semua node, lalu di tiap node ketik:
 
 ```
