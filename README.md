@@ -45,7 +45,7 @@ Menyalakan semua node, lalu di tiap node ketik:
 ip a
 ```
 Hasil:
-masukkan foto
+<img width="665" height="377" alt="image" src="https://github.com/user-attachments/assets/d289a71c-f67c-45d4-b5b6-1f59de580895" />
 
 ### soal 2
 
@@ -82,6 +82,7 @@ iface eth3 inet static
 - `eth2` → IP tetap `192.225.2.1` (gerbang buat Switch2 → Chisa)
 - `eth3` → IP tetap `192.225.3.1` (gerbang buat Switch3 → Knights & Eiri)
 
+
 ###### 2. Merestart networking / reboot node
 
 agar konfigurasi di jalankan.
@@ -96,7 +97,7 @@ ping -c 3 8.8.8.8
 
 **jika hasilnya seperti ini:**
 
-masukkan foto
+<img width="455" height="383" alt="image" src="https://github.com/user-attachments/assets/8f924030-30df-4d86-bc98-59c9dc9503d9" />
 
 ```
 3 packets transmitted, 3 received, 0% packet loss
@@ -123,6 +124,8 @@ sysctl -w net.ipv4.ip_forward=1
 ```
 cat /proc/sys/net/ipv4/ip_forward
 ```
+Hasil:
+<img width="377" height="65" alt="image" src="https://github.com/user-attachments/assets/71a0a559-9466-49e0-8c66-58094f0045e2" />
 
 jika hasilnya `1` → sudah aktif dan siap meneruskan traffic antar subnet.
 jika hasilnya `0` → berarti belum berhasil, ulangi langkah 1.
@@ -141,10 +144,10 @@ Caranya, dari konsol client (misal Alice):
 ping -c 3 <IP_Mika>
 ping -c 3 <IP_Chisa>
 ```
+Hasil:
+<img width="347" height="284" alt="image" src="https://github.com/user-attachments/assets/e607c539-2a26-4df8-9701-5c35e7b2a31e" />
 
 **Hasil yang diharapkan:** Semua client bisa saling ping (0% packet loss), baik yang satu switch maupun beda switch — tandanya routing dan forwarding di Router-Lain sudah jalan dengan benar.
-
-masukkan foto
 
 ### soal 4
 
@@ -200,9 +203,24 @@ curl google.com
 ```
 ➡️ jika ini juga berhasil, artinya DNS resolver-nya juga sudah jalan (bisa translate nama domain ke IP).
 
-jadi jika kedua tes di atas berhasil di semua 5 Client**, berarti Fase 4 sudah beres  setiap Entitas sudah bisa "berdiri sendiri" mengakses internet tanpa perlu campur tangan lebih lanjut dari Router-Lain.
+jadi jika kedua tes di atas berhasil di semua 5 Client, berarti Fase 4 sudah beres  setiap Entitas sudah bisa "berdiri sendiri" mengakses internet tanpa perlu campur tangan lebih lanjut dari Router-Lain.
 
-masukkan foto  
+Hasil:
+
+###### Alice
+<img width="410" height="398" alt="image" src="https://github.com/user-attachments/assets/c1a2fc68-f7f5-4cc7-bd1c-0bd52a3bb0b1" />
+
+###### Mika
+<img width="433" height="383" alt="image" src="https://github.com/user-attachments/assets/42239e67-60cf-4dc1-b8e6-a84109819f84" />
+
+###### Chisa
+<img width="458" height="383" alt="image" src="https://github.com/user-attachments/assets/bc73b9c9-7695-4a04-b60b-a006e9f98e1b" />
+
+###### Knights
+<img width="419" height="384" alt="image" src="https://github.com/user-attachments/assets/70219553-f0db-4a41-8e4f-174a90b97d4f" />
+
+###### Eiri
+<img width="443" height="371" alt="image" src="https://github.com/user-attachments/assets/848b0604-b112-420b-a71d-748cafde00bd" />
 
 soal 5
 
