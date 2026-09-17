@@ -157,7 +157,7 @@ ping -c 3 8.8.8.8
 
 **jika hasilnya seperti ini:**
 
-<img width="455" height="383" alt="image" src="https://github.com/user-attachments/assets/8f924030-30df-4d86-bc98-59c9dc9503d9" />
+<img width="959" height="404" alt="image" src="https://github.com/user-attachments/assets/7b3fb622-0cb6-49cd-acf0-93d89362f668" />
 
 ```
 3 packets transmitted, 3 received, 0% packet loss
