@@ -357,13 +357,87 @@ Script ini membuat satu file `cek_status.sh` yang kalau dijalankan, langsung nam
    
    <img width="959" height="337" alt="image" src="https://github.com/user-attachments/assets/1ca3b2f9-ea3c-4e26-b314-a669504b4932" />
 
-IP address di semua interface masih terpasang, dan aturan NAT (MASQUERADE) masih muncul di tabel — tandanya konfigurasi berhasil **bertahan** meski sempat di-restart.
+IP address di semua interface masih terpasang, dan aturan NAT (MASQUERADE) masih muncul di tabel tandanya konfigurasi berhasil **bertahan** meski sempat di-restart.
    
-
+---
 soal 6
 
 Untuk menjalankan traffic generator ([link](https://drive.google.com/drive/folders/1ZjFvWIjvAQAjE9pPthm7V_bGyaSt93lY?usp=sharing)) pada node Mika, pada node Mika, lalu melakukan packet sniffing dengan Wireshark di interface node Mika menggunakan display filter khusus untuk protokol DNS atau ICMP, serta menunjukkan screenshot hasil filter beserta ringkasan paket yang lolos.
 
+###### Menyiapkan script traffic generator di Mika
+
+Buka konsol Mika, buat file scriptnya:
+
+```
+nano /root/traffic_gen.sh
+```
+
+Paste isi script yang dikasih soal (isinya perintah ping, nslookup, dan dig ke beberapa server DNS publik). Simpan (`Ctrl+O`, Enter, `Ctrl+X`), lalu kasih izin jalan:
+
+```
+chmod +x /root/traffic_gen.sh
+```
+
+Cek dulu tools-nya sudah ada:
+
+```
+which nslookup dig ping
+```
+
+Kalau `dig` belum ada, install dulu:
+```
+apk add bind-tools        # kalau pakai Alpine
+```
+
+###### Menyalakan capture Wireshark lewat GNS3**
+
+1. Di topologi GNS3, cari **kabel** yang menghubungkan Mika ↔ Switch1
+2. Klik kanan **kabelnya** (bukan node-nya) → pilih **Start capture**
+3. Centang *"Start the capture visualization program"* → klik OK
+4. Wireshark otomatis terbuka dan mulai menampilkan traffic secara langsung
+
+###### Menjalankan script-nya
+
+Balik ke konsol Mika, jalankan:
+
+```
+/root/traffic_gen.sh
+```
+
+Tunggu sampai muncul tulisan selesai.
+
+###### Filter di Wireshark
+
+Di kolom filter bagian atas Wireshark (bukan capture filter, tapi **display filter**), ketik:
+
+```
+dns or icmp
+```
+
+lalu tekan Enter. Wireshark akan menyembunyikan paket lain dan hanya menampilkan paket DNS & ICMP saja.
+
+######  bukti (screenshot):
+
+1. **Screenshot Packet List**
+   <img width="1600" height="897" alt="WhatsApp Image 2026-09-15 at 12 27 49" src="https://github.com/user-attachments/assets/884fa529-d41f-4569-a79c-c5d6b3691aff" />
+
+   setelah filter `dns or icmp` diterapkan
+   
+2. **Ringkasan paket**
+    buka menu **Statistics → Protocol Hierarchy**, ini menampilkan jumlah/persentase paket DNS vs ICMP dari total capture
+   
+   <img width="1532" height="865" alt="WhatsApp Image 2026-09-15 at 12 28 31" src="https://github.com/user-attachments/assets/3d6cae53-86d5-46db-9430-5ca15524df5e" />
+   
+[Uploading soal6-mika-dns-icmp.pcapng…]()
+
+**Step 6: Hentikan & simpan capture**
+
+1. Klik kanan kabel yang sama di GNS3 → **Stop capture**
+2. Di Wireshark: **File → Save As**, simpan dengan nama jelas, misal:
+   ```
+   soal6-mika-dns-icmp.pcapng
+   ```
+3. File ini nanti dilampirkan sebagai bukti di laporan.
 soal 7
 
 Untuk membuat FTP Server di node Chisa dengan shared folder `/var/wired/data`, menerapkan kebijakan akses (alice: read & write, mika: read-only, eiri: no access/blacklist), serta membuktikannya dengan membuat file `signal_alice.txt` dari akun alice dan menunjukkan penolakan akses saat eiri mencoba login.
