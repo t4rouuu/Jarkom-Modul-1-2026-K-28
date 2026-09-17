@@ -415,14 +415,164 @@ lalu tekan Enter. Wireshark akan menyembunyikan paket lain dan hanya menampilkan
    ```
    [soal6-mika-dns-icmp.zip](https://github.com/user-attachments/files/32324473/soal6-mika-dns-icmp.zip)
 
-
-3. File ini nanti dilampirkan sebagai bukti di laporan.
-
 ---
 ### soal 7
 
 Untuk membuat FTP Server di node Chisa dengan shared folder `/var/wired/data`, menerapkan kebijakan akses (alice: read & write, mika: read-only, eiri: no access/blacklist), serta membuktikannya dengan membuat file `signal_alice.txt` dari akun alice dan menunjukkan penolakan akses saat eiri mencoba login.
 
+###### Menginstall vsftpd
+
+Cek dulu OS-nya:
+
+```
+cat /etc/os-release
+```
+
+jika Alpine:
+
+```
+apk update && apk add vsftpd
+```
+
+Pastikan berhasil:
+
+```
+which vsftpd
+```
+
+###### Membuat folder shared
+
+```
+mkdir -p /var/wired/data
+chmod 755 /var/wired/data
+```
+
+###### Membuat 3 akun user
+
+```
+adduser -D -h /var/wired/data alice
+adduser -D -h /var/wired/data mika
+adduser -D -h /var/wired/data eiri
+```
+
+Set password tiap user (wajib biar bisa login FTP):
+
+```
+passwd alice
+passwd mika
+passwd eiri
+```
+###### Mengtur kepemilikan folder
+
+```
+chown alice:alice /var/wired/data
+chmod 775 /var/wired/data
+```
+
+###### Mengedit config utama vsftpd
+
+Cari lokasi filenya:
+
+```
+find / -name "vsftpd.conf" 2>/dev/null
+```
+
+Edit filenya, isi/pastikan baris-baris berikut ada:
+
+```
+anonymous_enable=NO
+local_enable=YES
+write_enable=YES
+chroot_local_user=YES
+local_root=/var/wired/data
+allow_writeable_chroot=YES
+listen=YES
+pasv_enable=YES
+pasv_min_port=30000
+pasv_max_port=30100
+
+userlist_enable=YES
+userlist_deny=YES
+userlist_file=/etc/vsftpd/user_list
+
+user_config_dir=/etc/vsftpd/user_conf
+```
+
+###### Memblokir Eiri
+
+```
+echo "eiri" > /etc/vsftpd/user_list
+```
+Karena mode-nya *deny list*, siapa pun yang namanya ada di file ini otomatis ditolak login.
+
+###### Membuat aturan khusus Mika (read-only)
+
+```
+mkdir -p /etc/vsftpd/user_conf
+cat > /etc/vsftpd/user_conf/mika << 'EOF'
+write_enable=NO
+EOF
+```
+
+###### Menjalankan servernya
+
+```
+vsftpd /etc/vsftpd/vsftpd.conf &
+```
+
+Cek statusnya:
+
+```
+ps aux | grep vsftpd
+```
+
+###### Tes & ambil bukti (screenshot untuk laporan)
+
+###### A. Test Alice (harus bisa read & write)
+
+Dari node lain, buat dulu file testnya:
+
+```
+echo "test dari Alice" > signal_alice.txt
+```
+
+Lalu login FTP:
+
+```
+lftp [IP_CHISA]
+```
+
+Masuk pakai `alice`, lalu upload:
+
+```
+lftp> put signal_alice.txt
+```
+
+➡️ Harus **berhasil**. Cek juga bisa `ls`.
+
+###### B. Test Mika (harus bisa read, tapi GAGAL saat write)
+
+```
+lftp [IP_CHISA]
+```
+
+Login `mika`, coba:
+
+```
+lftp> put test_mika.txt
+```
+
+➡️ Harus muncul error **"Permission denied"** atau kode **553** → screenshot ini sebagai bukti read-only.
+Coba juga `ls` atau `get` file — ini harus tetap **berhasil** (buktikan read masih jalan).
+
+###### C. Test Eiri (harus ditolak total, bahkan sebelum masuk)
+
+```
+lftp [IP_CHISA]
+```
+Masukkan username `eiri` → harus langsung muncul penolakan seperti **"530 Permission denied"** → screenshot ini sebagai bukti blacklist berhasil.
+
+---
 soal 8
 
 Untuk melakukan koneksi FTP dari node Knights ke FTP Server Chisa memakai akun alice, mengupload file ([link](https://drive.google.com/drive/folders/1tvZpueSH9E3GWwXM6KNnM64Y5wNoIAYP?usp=sharing)), lalu menganalisis sesi Wireshark untuk menemukan perintah STOR, kode status 226, dan port data TCP mode PASV.
