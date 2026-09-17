@@ -495,6 +495,9 @@ userlist_enable=YES
 userlist_deny=YES
 userlist_file=/etc/vsftpd/user_list
 
+seccomp_sandbox=NO
+pasv_address=192.225.2.2
+
 user_config_dir=/etc/vsftpd/user_conf
 ```
 
