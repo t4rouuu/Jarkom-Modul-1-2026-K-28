@@ -444,7 +444,6 @@ which vsftpd
 
 ```
 mkdir -p /var/wired/data
-chmod 755 /var/wired/data
 ```
 
 ###### Membuat 3 akun user
@@ -471,34 +470,32 @@ chmod 775 /var/wired/data
 
 ###### Mengedit config utama vsftpd
 
-Cari lokasi filenya:
-
 ```
-find / -name "vsftpd.conf" 2>/dev/null
-```
-
-Edit filenya, isi/pastikan baris-baris berikut ada:
-
-```
+cat > /etc/vsftpd/vsftpd.conf 
 anonymous_enable=NO
 local_enable=YES
 write_enable=YES
+dirmessage_enable=YES
+xferlog_enable=YES
+connect_from_port_20=YES
+listen=YES
+
 chroot_local_user=YES
 local_root=/var/wired/data
 allow_writeable_chroot=YES
-listen=YES
+
 pasv_enable=YES
 pasv_min_port=30000
-pasv_max_port=30100
+pasv_max_port=30009
+pasv_address=[IP_CHISA]
+
+seccomp_sandbox=NO
 
 userlist_enable=YES
 userlist_deny=YES
 userlist_file=/etc/vsftpd/user_list
-
-seccomp_sandbox=NO
-pasv_address=192.225.2.2
-
 user_config_dir=/etc/vsftpd/user_conf
+
 ```
 
 ###### Memblokir Eiri
@@ -512,14 +509,13 @@ Karena mode-nya *deny list*, siapa pun yang namanya ada di file ini otomatis dit
 
 ```
 mkdir -p /etc/vsftpd/user_conf
-cat > /etc/vsftpd/user_conf/mika << 'EOF'
-write_enable=NO
-EOF
+echo "write_enable=NO" > /etc/vsftpd/user_conf/mika
 ```
 
 ###### Menjalankan servernya
 
 ```
+pkill vsftpd 2>/dev/null
 vsftpd /etc/vsftpd/vsftpd.conf &
 ```
 
@@ -527,6 +523,77 @@ Cek statusnya:
 
 ```
 ps aux | grep vsftpd
+```
+
+###### Persistensi 
+
+Karena container GNS3 bersifat ephemeral (paket, user, config bisa hilang saat restart — kecuali isi folder /root), semua langkah di atas dibungkus jadi satu script /root/setup_ftp.sh yang bisa dijalankan ulang kapan saja:
+
+```
+nano /root/setup_ftp.sh
+```
+```
+#!/bin/sh
+# Setup FTP Server - Node Chisa - Soal #7
+
+apk update
+apk add vsftpd
+
+mkdir -p /var/wired/data
+
+id alice >/dev/null 2>&1 || adduser -D -h /var/wired/data alice
+id mika  >/dev/null 2>&1 || adduser -D -h /var/wired/data mika
+id eiri  >/dev/null 2>&1 || adduser -D -h /var/wired/data eiri
+
+echo "alice:alice" | chpasswd
+echo "mika:mika" | chpasswd
+echo "eiri:eiri" | chpasswd
+
+chown alice:alice /var/wired/data
+chmod 775 /var/wired/data
+
+cat > /etc/vsftpd/vsftpd.conf << 'CONFEOF'
+anonymous_enable=NO
+local_enable=YES
+write_enable=YES
+dirmessage_enable=YES
+xferlog_enable=YES
+connect_from_port_20=YES
+listen=YES
+
+chroot_local_user=YES
+local_root=/var/wired/data
+allow_writeable_chroot=YES
+
+pasv_enable=YES
+pasv_min_port=30000
+pasv_max_port=30009
+pasv_address=192.225.2.2
+
+seccomp_sandbox=NO
+
+userlist_enable=YES
+userlist_deny=YES
+userlist_file=/etc/vsftpd/user_list
+user_config_dir=/etc/vsftpd/user_conf
+CONFEOF
+
+echo "eiri" > /etc/vsftpd/user_list
+
+mkdir -p /etc/vsftpd/user_conf
+echo "write_enable=NO" > /etc/vsftpd/user_conf/mika
+
+pkill vsftpd 2>/dev/null
+sleep 1
+vsftpd /etc/vsftpd/vsftpd.conf &
+
+echo "=== Setup selesai ==="
+ps aux | grep vsftpd
+```
+lanjut 
+```
+chmod +x /root/setup_ftp.sh
+/root/setup_ftp.sh
 ```
 
 ###### Tes & ambil bukti (screenshot untuk laporan)
@@ -542,13 +609,13 @@ echo "test dari Alice" > signal_alice.txt
 Lalu login FTP:
 
 ```
-lftp [IP_CHISA]
+lftp 192.225.2.2
 ```
 
 Masuk pakai `alice`, lalu upload:
 
 ```
-lftp> put signal_alice.txt
+put signal_alice.txt
 ```
 
 ➡️ Harus **berhasil**. Cek juga bisa `ls`.
@@ -559,13 +626,13 @@ lftp> put signal_alice.txt
 ###### B. Test Mika (harus bisa read, tapi GAGAL saat write)
 
 ```
-lftp [IP_CHISA]
+lftp 192.225.2.2
 ```
 
 Login `mika`, coba:
 
 ```
-lftp> put test_mika.txt
+ put test_mika.txt
 ```
 
 <img width="587" height="129" alt="WhatsApp Image 2026-09-15 at 13 40 30" src="https://github.com/user-attachments/assets/e5c38fd2-82e7-4a96-be61-34048200ef37" />
@@ -576,7 +643,7 @@ Coba juga `ls` atau `get` file — ini harus tetap **berhasil** (buktikan read m
 ###### C. Test Eiri (harus ditolak total, bahkan sebelum masuk)
 
 ```
-lftp [IP_CHISA]
+lftp 192.225.2.2
 ```
 Masukkan username `eiri` → harus langsung muncul penolakan seperti **"530 Permission denied"** → screenshot ini sebagai bukti blacklist berhasil.
 
@@ -727,7 +794,7 @@ Sama seperti soal sebelumnya:
 3. Di kolom filter Wireshark, ketik:
    
    ```
-   lftp or ftp-data
+   ftp or ftp-data
    ```
 
 ###### Mika download file (harus BERHASIL)
@@ -782,7 +849,7 @@ lftp> put /root/test_mika.txt
 Keluar:
 
 ```
-ftp> bye
+lftp> bye
 ```
 
 ###### mencari 2 bukti di Wireshark
@@ -805,7 +872,6 @@ Dengan filter `ftp or ftp-data` masih aktif, cari:
 
 Klik kedua paket ini, expand bagian *File Transfer Protocol (FTP)* di Packet Details.
 
-
 ###### Hentikan & simpan capture
 
 1. Klik kanan kabel yang sama di GNS3 → **Stop capture**
@@ -813,12 +879,12 @@ Klik kedua paket ini, expand bagian *File Transfer Protocol (FTP)* di Packet Det
    ```
    soal9-mika-readonly.pcapng
    ```
-
-soal 10
+---
+### soal 10
 
 Untuk mengirim ping dari node Knights ke node Chisa dengan payload 128 bytes, interval 0.3 detik, sebanyak 77 paket (ping -c 77 -s 128 -i 0.3 <IP_Chisa>), lalu menganalisis di Wireshark nilai ICMP Type/Code untuk Echo Request vs Echo Reply, serta packet loss dan RTT (min/avg/max).
 
-**Step 1: Cari IP Chisa**
+###### Mencari IP Chisa
 
 Di konsol Chisa:
 ```
@@ -826,9 +892,7 @@ ip -br a
 ```
 Catat IP eth0-nya (misal `192.225.2.2`).
 
----
-
-**Step 2: Nyalakan Wireshark**
+###### menyalakan Wireshark
 
 Sama seperti soal sebelumnya:
 1. Klik kanan kabel **Knights ↔ Switch3** di GNS3
@@ -837,22 +901,18 @@ Sama seperti soal sebelumnya:
    ```
    icmp
    ```
-
----
-
-**Step 3: Jalankan ping dari Knights**
+###### Menjalankan ping dari Knights
 
 Di konsol Knights (ganti IP sesuai Chisa):
+
 ```
 ping -c 77 -s 128 -i 0.3 192.225.2.2
 ```
-Tunggu sampai selesai (sekitar 23 detik). **Jangan tutup terminalnya** — biarkan output statistiknya tetap kelihatan buat screenshot.
 
----
-
-**Step 4: Baca hasil di terminal (packet loss & RTT)**
+###### Hasil di terminal (packet loss & RTT)
 
 Cari 2 baris di bagian bawah output:
+
 ```
 --- 192.225.2.2 ping statistics ---
 77 packets transmitted, 77 received, 0% packet loss, time xxxx ms
@@ -861,43 +921,44 @@ rtt min/avg/max/mdev = x.xxx/x.xxx/x.xxx/x.xxx ms
 - **Packet loss** → lihat persentase di baris pertama
 - **RTT min/avg/max** → 3 angka pertama di baris kedua
 
+  ###### Bukti screenshot:
+
+  Output terminal ping lengkap (command + statistik RTT & packet loss)
+
 Screenshot output ini utuh.
 
----
-
-**Step 5: Baca ICMP Type & Code di Wireshark**
+###### ICMP Type & Code di Wireshark
 
 Dengan filter `icmp` masih aktif, klik salah satu paket **Echo Request** (Knights → Chisa), expand bagian *Internet Control Message Protocol*, akan terlihat:
+
 ```
 Type: 8 (Echo request)
 Code: 0
 ```
+
 Klik paket **balasannya** (Echo Reply, Chisa → Knights, biasanya baris berikutnya):
+
 ```
 Type: 0 (Echo reply)
 Code: 0
 ```
-
-**Ringkasan buat laporan:**
 | Arah | Type | Code |
 |---|---|---|
 | Request (Knights → Chisa) | 8 | 0 |
 | Reply (Chisa → Knights) | 0 | 0 |
 
----
-
-**Step 6: Cek ukuran paket sesuai `-s 128`**
+ ###### Bukti screenshot:
+ 
+ Paket Echo Request di Wireshark (Type: 8, Code: 0)
+ 
+###### Cek ukuran paket sesuai `-s 128`**
 
 Klik salah satu Echo Request, lihat kolom **Length** di Packet List (atau expand bagian **Data** di ICMP) — payload-nya sekitar 128 bytes (total frame lebih besar karena ada header Ethernet+IP+ICMP di depannya, itu wajar).
 
----
+###### Bukti screenshot:
 
-**Step 7: Kumpulkan 3 screenshot**
-1. Output terminal ping lengkap (command + statistik RTT & packet loss)
-2. Paket Echo Request di Wireshark (Type: 8, Code: 0)
-3. Paket Echo Reply di Wireshark (Type: 0, Code: 0)
+Paket Echo Reply di Wireshark (Type: 0, Code: 0)
 
----
 ###### Hentikan & simpan capture
 
 1. Klik kanan kabel yang sama di GNS3 → **Stop capture**
@@ -905,15 +966,268 @@ Klik salah satu Echo Request, lihat kolom **Length** di Packet List (atau expand
    ```
    soal10-knights-ping-chisa.pcapng`
    ```
-
-   
-soal 11
+---   
+### soal 11
 
 Untuk membuktikan kelemahan protokol Telnet dengan membuat akun phantom_user/wired_ghost di telnetd node Chisa, login dari node Eiri, menangkap sesi dengan Wireshark, menunjukkan kredensial plain text lewat Follow TCP Stream, serta menjelaskan mengapa tiap karakter terkirim dalam paket TCP terpisah.
 
-soal 12
+###### Menginstall telnetd di Chisa 
+
+Cek dulu OS-nya:
+
+```
+cat /etc/os-release
+```
+
+```
+apk update
+apk add busybox-extras
+```
+
+###### Membuat user phantom_user
+
+```
+adduser -D phantom_user
+passwd phantom_user
+```
+Saat diminta password, ketik: `wired_ghost` (2x buat konfirmasi)
+
+###### Menjalankan service telnetd
+
+```
+telnetd -p 23 -l /bin/login &
+```
+
+Cek servicenya sudah listen di port 23:
+
+```
+netstat -tulnp | grep 23
+```
+
+atau kalau tidak ada `netstat`:
+```
+ss -tulnp | grep 23
+```
+
+Harus muncul baris dengan status **LISTEN** di port 23.
+
+###### Menyalakan Wireshark DULU (sebelum login Eiri)
+
+1. Klik kanan kabel **Eiri ↔ Switch3** di GNS3
+2. **Start capture** → centang visualisasi → OK
+3. Di kolom filter, ketik:
+   ```
+   telnet
+   ```
+###### Login Telnet dari Eiri**
+
+Di konsol Eiri:
+
+```
+telnet [IP_CHISA]
+```
+Saat diminta:
+
+```
+login: phantom_user
+Password: wired_ghost
+```
+Setelah masuk, coba perintah simpel:
+
+```
+whoami
+```
+
+Lalu keluar:
+
+```
+exit
+```
+
+###### Membuka Follow TCP Stream di Wireshark**
+
+Dengan filter `telnet` masih aktif, klik salah satu paket telnet, lalu:
+
+1. Klik kanan → **Follow → TCP Stream**
+
+Akan muncul jendela berisi seluruh isi sesi:
+- **Merah** = yang dikirim dari client (Eiri)
+- **Biru** = balasan dari server (Chisa)
+
+Di sini akan terlihat jelas:
+
+```
+login: phantom_user
+Password: wired_ghost
+```
+
+Muncul **polos, bisa dibaca langsung** — inilah bukti kelemahan Telnet.
+
+###### Screenshot Bukti:
+
+
+###### Kenapa tiap karakter jadi paket terpisah?
+
+Karena Telnet dirancang untuk emulasi terminal interaktif secara real-time, sehingga berjalan dalam mode **karakter-per-karakter**, bukan mode baris. Setiap kali user menekan satu tombol, client langsung mengirim karakter tersebut ke server dalam satu segmen TCP terpisah, tanpa menunggu baris selesai diketik. Ini memungkinkan fitur seperti echo langsung dari server dan respons instan terhadap tombol kontrol (misal Ctrl+C). Akibatnya, di Wireshark akan terlihat banyak paket TCP kecil beruntun  masing-masing hanya membawa 1 byte data  untuk tiap karakter password yang diketik.
+
+Bukti visualnya: di Packet List Pane (bukan Follow Stream), scroll ke bagian saat password diketik akan terlihat banyak paket kecil (panjang total frame sekitar 55-60 byte, isi data cuma 1 byte) beruntun dari Eiri ke Chisa, diselingi paket balasan echo dari Chisa.
+
+###### ###### Screenshot Bukti:
+
+###### Hentikan & simpan capture
+
+1. Klik kanan kabel yang sama di GNS3 → **Stop capture**
+2. Di Wireshark: **File → Save As**, simpan dengan nama jelas, misal:
+   ```
+   soal11-alice-scan-knights.pcapng`
+   ```
+---
+###### soal 12
 
 Untuk melakukan port scanning dari node Alice ke node Knights memakai Netcat pada port 22, 80 (terbuka), dan 7777 (tertutup), lalu menganalisis di Wireshark perbedaan TCP Flag antara port terbuka (SYN-ACK) dan port tertutup (RST-ACK).
+
+
+
+###### Memastikan port 22 (SSH) terbuka di Knights
+
+Cek dulu apakah SSH server sudah jalan:
+
+```
+ps aux | grep sshd
+netstat -tulnp | grep :22
+```
+
+Kalau belum ada, install & jalankan (di konsol **Knights**):
+
+```
+apk update
+apk add openssh
+ssh-keygen -A
+/usr/sbin/sshd
+```
+
+Cek lagi sudah listen:
+
+```
+netstat -tulnp | grep :22
+```
+
+###### Membuka port 80 (HTTP) di Knights
+
+Paling gampang pakai Python built-in server (sudah dicontohkan di modul bagian 1.6.3):
+
+```
+python3 -m http.server 80 &
+```
+
+Cek:
+```
+netstat -tulnp | grep :80
+```
+
+###### Memastikan port 7777 TIDAK dibuka apa-apa
+
+Tidak perlu ngapa-ngapain — selama tidak ada service yang sengaja dijalankan di port itu, otomatis **tertutup**. Cek buat mastiin:
+
+```
+netstat -tulnp | grep :7777
+```
+
+Harusnya **kosong** (tidak ada output).
+
+###### Menyalakan Wireshark capture DULU
+
+1. Klik kanan kabel di topologi GNS3 yang menghubungkan **Alice ↔ Switch1** (atau bisa juga di link Knights, tergantung mana yang gampang diakses).
+2. **Start capture** → centang **Start the capture visualization program** → **OK**.
+3. Di kolom filter Wireshark, ketik:
+   
+```
+tcp
+```
+
+###### Scan pakai Netcat dari Alice
+
+Balik ke konsol **Alice**. Cek dulu `nc` ada:
+
+```
+which nc
+```
+
+Kalau belum ada:
+
+```
+apk add netcat-openbsd
+```
+
+Scan tiap port satu-satu (biar gampang dibedain waktunya di Wireshark), pakai opsi `-z` (zero-I/O mode, khusus buat scanning) dan `-v` (verbose):
+
+```
+nc -zv [IP_KNIGHTS] 22
+```
+
+Tunggu hasilnya (biasanya langsung muncul `open` atau `succeeded`), lalu:
+
+```
+nc -zv [IP_KNIGHTS] 80
+```
+
+Lalu port yang tertutup:
+
+```
+nc -zv [IP_KNIGHTS] 7777
+```
+
+Kirim/screenshot hasil ketiga command ini — biasanya nc langsung bilang "open"/"succeeded" atau "refused"/"failed" di terminal.
+
+###### Membaca hasil di Wireshark
+
+Balik ke Wireshark. Sekarang persempit filter biar gampang baca **cuma paket SYN dan balasannya**:
+
+```
+tcp.flags.syn==1
+```
+
+Kamu akan lihat pola seperti ini per port:
+
+###### Untuk port 22 dan 80 (terbuka):
+```
+Alice → Knights   [SYN]           (Alice minta koneksi)
+Knights → Alice   [SYN, ACK]      (Knights: "oke, saya buka")
+Alice → Knights   [ACK] atau [RST] (Alice: "oke makasih", lalu tutup lagi karena cuma scan)
+```
+
+###### Untuk port 7777 (tertutup):
+```
+Alice → Knights   [SYN]           (Alice minta koneksi)
+Knights → Alice   [RST, ACK]      (Knights: "gaada yang denger di sini, nolak")
+```
+
+Cara baca flag-nya di Wireshark: klik paket balasan dari Knights, expand bagian **Transmission Control Protocol** di Packet Details Pane, cari baris **Flags**:
+
+- Kalau isinya `0x012 (SYN, ACK)` → port terbuka
+  
+- Kalau isinya `0x014 (RST, ACK)` → port tertutup
+
+##### Screenshot bukti
+
+Ambil 3 screenshot, masing-masing menunjukkan paket balasan dari Knights dengan Packet Details Pane ter-expand di bagian TCP Flags:
+
+1. **Balasan port 22** → tunjukkan flag `SYN, ACK`
+2. **Balasan port 80** → tunjukkan flag `SYN, ACK`
+3. **Balasan port 7777** → tunjukkan flag `RST, ACK`
+
+#####  jelaskan mengapa kredensial tidak terlihat dalam bentuk teks terbuka seperti pada Telnet? 
+
+>SSH melakukan Key Exchange (pertukaran kunci) di awal koneksi untuk menyepakati kunci enkripsi sesi antara client dan server, tanpa mengirim kunci itu sendiri lewat jaringan. Setelah kunci disepakati, semua data (termasuk username, password, dan isi sesi) dienkripsi. Jadi kalau disadap di Wireshark, yang terlihat cuma "Encrypted Packet" — bytes acak yang tidak terbaca — bukan teks polos seperti Telnet.
+
+###### Hentikan & simpan capture
+
+1. Klik kanan kabel yang sama di GNS3 → **Stop capture**
+2. Di Wireshark: **File → Save As**, simpan dengan nama jelas, misal:
+ ```
+soal12-alice-scan-knights.pcapng
+```
+---
 
 soal 13
 
