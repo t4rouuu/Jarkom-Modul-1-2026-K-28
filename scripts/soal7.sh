@@ -1,3 +1,5 @@
+#setup_ftp.sh
+
 #!/bin/sh
 set -eu
 # Jalankan dari klien FTP; ubah IP server bila perlu.
