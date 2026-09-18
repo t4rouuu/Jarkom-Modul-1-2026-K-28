@@ -222,7 +222,7 @@ Hasil:
 
 **Hasil yang diharapkan:** 
 
-Semua client bisa saling ping (0% packet loss), baik yang satu switch maupun beda switch — tandanya routing dan forwarding di Router-Lain sudah jalan dengan benar.
+Semua client bisa saling ping (0% packet loss), baik yang satu switch maupun beda switch tandanya routing dan forwarding di Router-Lain sudah jalan dengan benar.
 
 ---
 ### soal 4
@@ -264,7 +264,7 @@ atau
 ```
 curl google.com
 ```
-➡️ jika ini juga berhasil, artinya DNS resolver-nya juga sudah jalan (bisa translate nama domain ke IP).
+➡️ jika ini juga berhasil, artinya DNS resolvernya juga sudah jalan (bisa translate nama domain ke IP).
 
 jadi jika kedua tes di atas berhasil di semua 5 Client, berarti Fase 4 sudah beres  setiap Entitas sudah bisa "berdiri sendiri" mengakses internet tanpa perlu campur tangan lebih lanjut dari Router-Lain.
 
@@ -288,7 +288,7 @@ Hasil:
 ---
 ### soal 5
 
-Untuk memastikan seluruh konfigurasi jaringan tetap tersimpan (persisten) meskipun semua node di-restart, serta membuat script verifikasi `/root/cek_status.sh` di Router Lain yang menampilkan ringkasan interface (`ip -br a`) dan status tabel NAT (`iptables -t nat -L -v -n`) setelah reboot.
+Untuk memastikan seluruh konfigurasi jaringan tetap tersimpan (persisten) meskipun semua node direstart, serta membuat script verifikasi `/root/cek_status.sh` di Router Lain yang menampilkan ringkasan interface (`ip -br a`) dan status tabel NAT (`iptables -t nat -L -v -n`) setelah reboot.
 
 **Pindahkan config NAT/forwarding ke file interfaces (Router-Lain)**
 
@@ -362,21 +362,51 @@ soal 6
 
 Untuk menjalankan traffic generator ([link](https://drive.google.com/drive/folders/1ZjFvWIjvAQAjE9pPthm7V_bGyaSt93lY?usp=sharing)) pada node Mika, pada node Mika, lalu melakukan packet sniffing dengan Wireshark di interface node Mika menggunakan display filter khusus untuk protokol DNS atau ICMP, serta menunjukkan screenshot hasil filter beserta ringkasan paket yang lolos.
 
-###### Menyiapkan script traffic generator di Mika
+**Siapkan script traffic generator di Mika**
 
 Buka konsol Mika, buat file scriptnya:
 
 ```
 nano /root/traffic_gen.sh
 ```
+```
+#!/bin/bash
+# ============================================
+# Traffic Generator — Protocol 7 Network
+# Serial Experiments Lain — Modul 1 Jarkom 2026
+# Jalankan di node MIKA untuk generate traffic DNS & ICMP
+# ============================================
 
-Paste isi script yang dikasih soal (isinya perintah ping, nslookup, dan dig ke beberapa server DNS publik). Simpan (`Ctrl+O`, Enter, `Ctrl+X`), lalu kasih izin jalan:
+echo "============================================"
+echo "  Protocol 7 Traffic Generator v2026"
+echo "  Node: Mika Iwakura"
+echo "============================================"
+echo "[*] Generating DNS & ICMP traffic..."
+
+# ICMP Traffic
+ping -c 5 8.8.8.8 &
+ping -c 5 1.1.1.1 &
+ping -c 3 its.ac.id &
+
+# DNS Queries
+nslookup google.com 8.8.8.8 &
+nslookup its.ac.id 8.8.8.8 &
+nslookup github.com 1.1.1.1 &
+dig @8.8.8.8 example.com A &
+dig @1.1.1.1 cloudflare.com AAAA &
+
+wait
+echo "[*] Traffic generation complete."
+echo "[*] Check Wireshark for captured packets."
+```
+
+Simpan (`Ctrl+O`, Enter, `Ctrl+X`), lalu kasih izin jalan:
 
 ```
 chmod +x /root/traffic_gen.sh
 ```
 
-Cek dulu tools-nya sudah ada:
+**Cek dulu tools-nya sudah ada:**
 
 ```
 which nslookup dig ping
@@ -384,17 +414,17 @@ which nslookup dig ping
 
 Kalau `dig` belum ada, install dulu:
 ```
-apk add bind-tools        # kalau pakai Alpine
+apk add bind-tools        
 ```
 
-###### Menyalakan capture Wireshark lewat GNS3**
+**Nyalakan capture Wireshark lewat GNS3**
 
 1. Di topologi GNS3, cari **kabel** yang menghubungkan Mika ↔ Switch1
 2. Klik kanan **kabelnya** (bukan node-nya) → pilih **Start capture**
 3. Centang *"Start the capture visualization program"* → klik OK
 4. Wireshark otomatis terbuka dan mulai menampilkan traffic secara langsung
 
-###### Menjalankan script-nya
+**Jalankan scriptnya
 
 Balik ke konsol Mika, jalankan:
 
@@ -404,7 +434,7 @@ Balik ke konsol Mika, jalankan:
 
 Tunggu sampai muncul tulisan selesai.
 
-###### Filter di Wireshark
+**Filter di Wireshark**
 
 Di kolom filter bagian atas Wireshark (bukan capture filter, tapi **display filter**), ketik:
 
@@ -414,7 +444,7 @@ dns or icmp
 
 lalu tekan Enter. Wireshark akan menyembunyikan paket lain dan hanya menampilkan paket DNS & ICMP saja.
 
-######  bukti (screenshot):
+**Screenshot bukti:**
 
 1. **Screenshot Packet List**
    <img width="1600" height="897" alt="WhatsApp Image 2026-09-15 at 12 27 49" src="https://github.com/user-attachments/assets/884fa529-d41f-4569-a79c-c5d6b3691aff" />
@@ -427,10 +457,10 @@ lalu tekan Enter. Wireshark akan menyembunyikan paket lain dan hanya menampilkan
    
    <img width="1532" height="865" alt="WhatsApp Image 2026-09-15 at 12 28 31" src="https://github.com/user-attachments/assets/3d6cae53-86d5-46db-9430-5ca15524df5e" />
 
-###### Hentikan & simpan capture**
+**Hentikan & simpan capture**
 
 1. Klik kanan kabel yang sama di GNS3 → **Stop capture**
-2. Di Wireshark: **File → Save As**, simpan dengan nama jelas, misal:
+2. Di Wireshark: **File → Save As**, simpan dengan nama jelas,
    ```
    soal6-mika-dns-icmp.pcapng
    ```
@@ -441,7 +471,9 @@ lalu tekan Enter. Wireshark akan menyembunyikan paket lain dan hanya menampilkan
 
 Untuk membuat FTP Server di node Chisa dengan shared folder `/var/wired/data`, menerapkan kebijakan akses (alice: read & write, mika: read-only, eiri: no access/blacklist), serta membuktikannya dengan membuat file `signal_alice.txt` dari akun alice dan menunjukkan penolakan akses saat eiri mencoba login.
 
-###### Menginstall vsftpd
+Semua perintah berikut diketik di Console Chisa.
+
+**Install vsftpd**
 
 Cek dulu OS-nya:
 
@@ -461,13 +493,13 @@ Pastikan berhasil:
 which vsftpd
 ```
 
-###### Membuat folder shared
+**Buat folder shared**
 
 ```
 mkdir -p /var/wired/data
 ```
 
-###### Membuat 3 akun user
+**Buat 3 akun user**
 
 ```
 adduser -D -h /var/wired/data alice
@@ -482,17 +514,23 @@ passwd alice
 passwd mika
 passwd eiri
 ```
-###### Mengtur kepemilikan folder
+**Atur kepemilikan folder**
 
 ```
 chown alice:alice /var/wired/data
 chmod 775 /var/wired/data
 ```
 
-###### Mengedit config utama vsftpd
+**Edit config utama vsftpd**
+
+Membuat konfigurasi vsftpd.conf
 
 ```
-cat > /etc/vsftpd/vsftpd.conf 
+nano /etc/vsftpd/vsftpd.conf
+```
+Kemudian masukkan isi konfigurasi:
+
+```
 anonymous_enable=NO
 local_enable=YES
 write_enable=YES
@@ -508,7 +546,7 @@ allow_writeable_chroot=YES
 pasv_enable=YES
 pasv_min_port=30000
 pasv_max_port=30009
-pasv_address=[IP_CHISA]
+pasv_address=192.225.2.2
 
 seccomp_sandbox=NO
 
@@ -519,21 +557,21 @@ user_config_dir=/etc/vsftpd/user_conf
 
 ```
 
-###### Memblokir Eiri
+**Blokir Eiri **
 
 ```
 echo "eiri" > /etc/vsftpd/user_list
 ```
-Karena mode-nya *deny list*, siapa pun yang namanya ada di file ini otomatis ditolak login.
+Karena modenya *deny list*, siapa pun yang namanya ada di file ini otomatis ditolak login.
 
-###### Membuat aturan khusus Mika (read-only)
+**Buat aturan khusus Mika (read-only)**
 
 ```
 mkdir -p /etc/vsftpd/user_conf
 echo "write_enable=NO" > /etc/vsftpd/user_conf/mika
 ```
 
-###### Menjalankan servernya
+**Jalankan servernya**
 
 ```
 pkill vsftpd 2>/dev/null
@@ -545,10 +583,11 @@ Cek statusnya:
 ```
 ps aux | grep vsftpd
 ```
+Kalau muncul proses vsftpd, berarti servernya berjalan.
 
-###### Persistensi 
+**Persistensi**
 
-Karena container GNS3 bersifat ephemeral (paket, user, config bisa hilang saat restart — kecuali isi folder /root), semua langkah di atas dibungkus jadi satu script /root/setup_ftp.sh yang bisa dijalankan ulang kapan saja:
+Karena container GNS3 bersifat ephemeral (paket, user, config bisa hilang saat restart kecuali isi folder /root), semua langkah di atas dibungkus jadi satu script /root/setup_ftp.sh yang bisa dijalankan ulang kapan saja:
 
 ```
 nano /root/setup_ftp.sh
@@ -617,11 +656,11 @@ chmod +x /root/setup_ftp.sh
 /root/setup_ftp.sh
 ```
 
-###### Tes & ambil bukti (screenshot untuk laporan)
+**Tes & ambil bukti screenshot**
 
-###### A. Test Alice (harus bisa read & write)
+#### A. Test Alice (harus bisa read & write)
 
-Dari node lain, buat dulu file testnya:
+Jalankan perintah ini di Console Alice, buat dulu file testnya:
 
 ```
 echo "test dari Alice" > signal_alice.txt
@@ -632,8 +671,13 @@ Lalu login FTP:
 ```
 lftp 192.225.2.2
 ```
+Login:
 
-Masuk pakai `alice`, lalu upload:
+```
+Username: alice
+Password: password Alice
+```
+lalu upload:
 
 ```
 put signal_alice.txt
@@ -643,8 +687,9 @@ put signal_alice.txt
 
 <img width="793" height="138" alt="WhatsApp Image 2026-09-15 at 13 29 41" src="https://github.com/user-attachments/assets/2dbcb196-6cc7-41bc-af52-3f99baf27278" />
 
+#### B. Test Mika (harus bisa read, tapi GAGAL saat write)
 
-###### B. Test Mika (harus bisa read, tapi GAGAL saat write)
+lakukan hal yang sama di Console Mika
 
 ```
 lftp 192.225.2.2
@@ -658,10 +703,12 @@ Login `mika`, coba:
 
 <img width="587" height="129" alt="WhatsApp Image 2026-09-15 at 13 40 30" src="https://github.com/user-attachments/assets/e5c38fd2-82e7-4a96-be61-34048200ef37" />
 
-➡️ Harus muncul error **"Permission denied"** atau kode **550** → screenshot ini sebagai bukti read-only.
-Coba juga `ls` atau `get` file — ini harus tetap **berhasil** (buktikan read masih jalan).
+➡️ Harus muncul error **"Permission denied"** atau kode **550** 
+Coba juga `ls` atau `get` file ini harus tetap **berhasil** (buktikan read masih jalan).
 
 ###### C. Test Eiri (harus ditolak total, bahkan sebelum masuk)
+
+lakukan hal yang sama di Console Eiri
 
 ```
 lftp 192.225.2.2
@@ -675,7 +722,7 @@ Masukkan username `eiri` → harus langsung muncul penolakan seperti **"530 Perm
 
 Untuk melakukan koneksi FTP dari node Knights ke FTP Server Chisa memakai akun alice, mengupload file ([link](https://drive.google.com/drive/folders/1tvZpueSH9E3GWwXM6KNnM64Y5wNoIAYP?usp=sharing)), lalu menganalisis sesi Wireshark untuk menemukan perintah STOR, kode status 226, dan port data TCP mode PASV.
 
-###### Mendowlod file laporan di Knights
+**Download file laporan di Knights**
 
 Buka konsol Knights, buat filenya:
 
@@ -683,13 +730,53 @@ Buka konsol Knights, buat filenya:
 nano /root/knights_report.txt
 ```
 
-Isi dengan teks laporan (ganti prefix IP sesuai kelompok). Simpan (`Ctrl+O`, Enter, `Ctrl+X`), lalu cek:
+Isi dengan teks berikut:
+
+```
+================================================
+   KNIGHTS OF THE EASTERN CALCULUS — STATUS REPORT
+   Protocol 7 Surveillance Network
+   Classification: LEVEL 7 — EYES ONLY
+================================================
+
+Date: [CLASSIFIED]
+Agent: Knights Unit Alpha
+Node: Switch 3 — Subnet 10.<PREFIX>.3.0/24
+
+---
+
+SUBJECT: Network Reconnaissance Report
+
+The Wired has been successfully infiltrated through
+Protocol 7 channels. Current observations:
+
+1. Router "Lain" has been identified as the central
+   gateway node connecting all three subnet segments.
+
+2. Switch 1 (10.<PREFIX>.1.0/24) hosts Alice and Mika.
+   Both nodes show standard traffic patterns.
+
+3. Switch 2 (10.<PREFIX>.2.0/24) hosts Chisa alone.
+   Isolated subnet — minimal cross-traffic observed.
+
+4. Switch 3 (10.<PREFIX>.3.0/24) — our operational base.
+   Knights and Eiri coexist on this segment.
+
+RECOMMENDATION:
+Continue monitoring FTP and Telnet sessions for
+plaintext credential exposure. SSH tunnels remain
+impenetrable without keylog access.
+
+------- END OF REPORT -------
+Knights of the Eastern Calculus
+"Let's all love Lain."
+```
 
 ```
 cat /root/knights_report.txt
 ```
 
-###### Menyalakan Wireshark DULU (sebelum FTP jalan)
+**Nyalakan Wireshark DULU (sebelum FTP jalan)**
 
 Sama seperti soal 6, capture-nya lewat GNS3:
 1. Pilih salah satu link: **Knights ↔ Switch3** atau **Chisa ↔ Switch2**
@@ -701,34 +788,40 @@ Sama seperti soal 6, capture-nya lewat GNS3:
    ftp or ftp-data
    ```
 
-###### Mengupload file dari Knights pakai akun Alice
+**Upload file dari Knights pakai akun Alice**
 
 Balik ke konsol Knights:
 
 ```
-lftp [IP_CHISA]
+lftp 192.225.2.2
 ```
 
-Login pakai `alice` + passwordnya, lalu upload:
+Kemudian login menggunakan:
+```
+Username: alice
+Password: password Alice
+```
+lalu upload:
 
 ```
-lftp> put /root/knights_report.txt
+put /root/knights_report.txt
 ```
 
 Setelah selesai:
 ```
-lftp> bye
+bye
 ```
 
-###### Cek file sudah sampai di Chisa
+**Cek file sudah sampai di Chisa**
 
+Lalu pindah ke Console Chisa
 ```
 ls -la /var/wired/data/
 ```
 
 Harus muncul `knights_report.txt`.
 
-###### Mencari 3 bukti di Wireshark
+#### Mencari 3 bukti di Wireshark
 
 Dengan filter `ftp or ftp-data` masih aktif, cari 3 hal ini di Packet List:
 
@@ -756,18 +849,18 @@ port = (p1 × 256) + p2
 
 Contoh: `(192,225,2,2,196,80)` → port = (196×256)+80 = **50256**
 
-###### Screenshot & simpan bukti
+**Screenshot bukti:**
 
 Ambil screenshot yang menunjukkan (dengan Packet Details ter-expand):
 1. Paket **STOR knights_report.txt**
    
-   <img width="694" height="295" alt="WhatsApp Image 2026-09-15 at 14 10 37" src="https://github.com/user-attachments/assets/e50ec1fc-bea2-4acb-aba1-d219406e5421" />
+<img width="694" height="295" alt="WhatsApp Image 2026-09-15 at 14 10 37" src="https://github.com/user-attachments/assets/e50ec1fc-bea2-4acb-aba1-d219406e5421" />
    
-   <img width="1600" height="899" alt="WhatsApp Image 2026-09-15 at 14 15 53" src="https://github.com/user-attachments/assets/aed3b316-e30d-420c-8f9d-5a0a0a92a034" />
+ <img width="1600" height="899" alt="WhatsApp Image 2026-09-15 at 14 15 53" src="https://github.com/user-attachments/assets/aed3b316-e30d-420c-8f9d-5a0a0a92a034" />
 
 2. Paket **226 Transfer complete**
 
-    <img width="1600" height="899" alt="WhatsApp Image 2026-09-15 at 14 16 41" src="https://github.com/user-attachments/assets/1c77f3e6-b729-48fb-b9c9-61d141c525ed" />
+<img width="1600" height="899" alt="WhatsApp Image 2026-09-15 at 14 16 41" src="https://github.com/user-attachments/assets/1c77f3e6-b729-48fb-b9c9-61d141c525ed" />
 
    
 3. Paket **227 Entering Passive Mode** (buat ambil angka portnya)
@@ -776,7 +869,7 @@ Ambil screenshot yang menunjukkan (dengan Packet Details ter-expand):
 
 <img width="1600" height="899" alt="WhatsApp Image 2026-09-15 at 14 19 37" src="https://github.com/user-attachments/assets/ad101d05-496f-4467-9422-a9d0583a5f7e" />
 
-###### Hentikan & simpan capture**
+**Hentikan & simpan capture**
 
 1. Klik kanan kabel yang sama di GNS3 → **Stop capture**
 2. Di Wireshark: **File → Save As**, simpan dengan nama jelas, misal:
@@ -788,7 +881,7 @@ Ambil screenshot yang menunjukkan (dengan Packet Details ter-expand):
 
 Untuk mengunduh dokumen Protokol Tujuh ([link](https://drive.google.com/drive/folders/1S3hG0dnZBTkCta4uILWwKVc6dSYYGRJ6?usp=sharing)) dari FTP Server Chisa memakai akun mika, lalu membuktikan pembatasan read-only dengan mencoba upload file baru dan menunjukkan pesan error 550 Permission denied.
 
-###### Menyiapkan file manifesto di Chisa
+**Siapkan file manifesto**
 
 Karena Mika tidak boleh upload, file ini harus sudah ada duluan di server. Buat langsung di konsol Chisa:
 
@@ -796,7 +889,60 @@ Karena Mika tidak boleh upload, file ini harus sudah ada duluan di server. Buat 
 nano /var/wired/data/protocol7_manifesto.txt
 ```
 
-Isi dengan teks manifesto (sesuai soal). 
+Isi dengan teks manifesto berikut:
+
+```
+PROTOCOL 7 - THE MANIFESTO
+A Declaration of Digital Consciousness
+Serial Experiments Lain - Year 2026
+================================================
+
+ARTICLE I: THE NATURE OF THE WIRED
+
+The Wired is not merely a network of interconnected
+machines. It is the collective unconscious of
+humanity, rendered in packets and protocols.
+
+Every TCP handshake is a conversation.
+Every DNS query is a question.
+Every encrypted tunnel is a whispered secret.
+
+ARTICLE II: THE SEVEN PRINCIPLES
+
+1. All nodes are equal in the eyes of the router.
+2. No packet shall be dropped without cause.
+3. Encryption is the right of every connection.
+4. Plaintext protocols expose the vulnerable.
+5. The firewall protects, but also imprisons.
+6. NAT masquerades hides truth behind a single face.
+7. The Wired remembers everything - packet logs
+   are merely a temporary forgetting.
+
+ARTICLE III: THE PROPERTY OF LAIN
+
+"If you're not remembered, then you never existed."
+
+In the world of networking, persistence is survival.
+A configuration that vanishes upon restart is a
+thought that was never truly committed to memory.
+
+Therefore: Save your iptables. Write your interfaces.
+Let your routing tables endure beyond the power cycle.
+
+ARTICLE IV: CONCERNING SECURITY
+
+Telnet is the glass house of protocols - transparent
+to any observer with a packet sniffer.
+
+SSH is the steel vault - its contents visible only
+to those who possess the key.
+
+Choose wisely which door you open to The Wired.
+
+------------------------------------------------
+"No matter where you go, everyone's connected."
+- Lain Iwakura
+```
 
 Simpan (`Ctrl+O`, Enter, `Ctrl+X`).
 
@@ -807,7 +953,7 @@ chmod 644 /var/wired/data/protocol7_manifesto.txt
 ls -la /var/wired/data/
 ```
 
-###### Menyalakan Wireshark dulu
+**Nyalakan Wireshark dulu**
 
 Sama seperti soal sebelumnya:
 1. Klik kanan kabel **Mika ↔ Switch1** (atau Chisa ↔ Switch2) di GNS3
@@ -818,19 +964,28 @@ Sama seperti soal sebelumnya:
    ftp or ftp-data
    ```
 
-###### Mika download file (harus BERHASIL)
+#### Mika download file (harus BERHASIL)
 
 Di konsol Mika:
 
 ```
-lftp [IP_CHISA]
+lftp 192.225.2.2
 ```
 
-Login pakai `mika` + passwordnya, lalu:
+Kemudian login menggunakan:
+```
+Username: Mika
+Password: password Mika
+```
+ lalu:
 
 ```
-lftp> get protocol7_manifesto.txt
-lftp> bye
+get protocol7_manifesto.txt
+bye
+```
+Cek file hasil download:
+```
+ls -la
 ```
 
 Cek hasilnya di luar sesi FTP:
@@ -860,13 +1015,13 @@ echo "coba upload dari mika" > /root/test_mika.txt
 Login FTP lagi sebagai mika:
 
 ```
-lftp [IP_CHISA]
+lftp 192.225.2.2
 ```
 
 Coba upload:
 
 ```
-lftp> put /root/test_mika.txt
+put /root/test_mika.txt
 ```
 
 ➡️ Karena Mika sudah di-set `write_enable=NO` (dari Soal 7), harusnya muncul error seperti:
@@ -881,26 +1036,24 @@ Keluar:
 lftp> bye
 ```
 
-###### mencari 2 bukti di Wireshark
+**Mencari 2 bukti di Wireshark**
 
 Dengan filter `ftp or ftp-data` masih aktif, cari:
 
 1. **Perintah RETR**
 
-   (waktu download berhasil) → paket dengan info:
+(waktu download berhasil) → paket dengan info:
+```
+RETR protocol7_manifesto.txt
+```
    
-   ```
-   RETR protocol7_manifesto.txt
-   ```
-   
-   <img width="1600" height="896" alt="WhatsApp Image 2026-09-15 at 14 50 45" src="https://github.com/user-attachments/assets/6bfbceb5-d84b-43fa-bdb6-b69f4acbbc7e" />
-
+<img width="1600" height="896" alt="WhatsApp Image 2026-09-15 at 14 50 45" src="https://github.com/user-attachments/assets/6bfbceb5-d84b-43fa-bdb6-b69f4acbbc7e" />
 
 2. **Perintah STOR + penolakan**
    
-   (waktu upload gagal) → dua paket:
-   - `STOR test_mika.txt`
-   - Balasan server: `550 Permission denied.`
+(waktu upload gagal) → dua paket:
+- `STOR test_mika.txt`
+- Balasan server: `550 Permission denied.`
 
 <img width="955" height="226" alt="WhatsApp Image 2026-09-15 at 14 49 11" src="https://github.com/user-attachments/assets/00db6551-ec27-4402-a504-e5135b14b93e" />
 
@@ -908,8 +1061,7 @@ Klik kedua paket ini, expand bagian *File Transfer Protocol (FTP)* di Packet Det
 
 <img width="1600" height="869" alt="WhatsApp Image 2026-09-15 at 14 51 32" src="https://github.com/user-attachments/assets/0f09791d-7849-485f-94e0-a029c66f7d8a" />
 
-
-###### Hentikan & simpan capture
+**Hentikan & simpan capture**
 
 1. Klik kanan kabel yang sama di GNS3 → **Stop capture**
 2. Di Wireshark: **File → Save As**, simpan dengan nama jelas, misal:
