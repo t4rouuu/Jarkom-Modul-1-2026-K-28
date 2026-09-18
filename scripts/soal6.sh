@@ -1,3 +1,5 @@
+#traffic_gen.sh
+
 #!/bin/sh
 set -eu
 echo '=== Protocol 7 Traffic Generator ==='
