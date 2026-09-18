@@ -34,7 +34,7 @@
 
 Untuk mempersiapkan pembangunan The Wired, kita membangun topologi jaringan The Wired di GNS3, dengan Router Lain sebagai pusat yang terhubung ke tiga Switch: Switch 1 (menuju Alice & Mika), Switch 2 (menuju Chisa), dan Switch 3 (menuju Knights & Eiri) di mana kelima entitas tersebut dikonfigurasi sebagai Client, menggunakan prefix IP sesuai kelompok masing-masing.
 
-###### Menyiapkan nodenya
+**Menyiapkan nodenya**
 
 Tarik node ke workspace GNS3:
 - 1 Router (kasih 4 adapter/interface)
