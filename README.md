@@ -91,7 +91,7 @@ iface eth3 inet static
 
 **konfigurasi Cleint dan uji coba**
 
-dengan Menyalakan semua node, lalu di tiap node ketik:
+dengan Menyalakan semua node, lalu di tiap node ketikan:
 ```
 ip a
 ```
@@ -159,7 +159,7 @@ Hasil:
 
 **Tes koneksi internet**
 
-Di konsol Router-Lain, ketik:
+Di konsol Router-Lain, ketikan:
 
 ```
 ping -c 3 8.8.8.8
@@ -180,19 +180,20 @@ ping -c 3 8.8.8.8
 
 Untuk memastikan seluruh Entitas (Client) di bawah Switch 1, Switch 2, dan Switch 3 dapat saling terhubung dan berkomunikasi satu sama lain, dengan mengkonfigurasi routing pada Router Lain setelah router tersebut terhubung ke internet.
 
-###### Mengaktifkan IP forwarding
+**Aktifkan IP forwarding**
 
-Di konsol Router-Lain, ketik:
+Di konsol Router-Lain, ketikan:
 
 ```
 sysctl -w net.ipv4.ip_forward=1
 ```
 
-###### Memastikan sudah aktif 
+**Pastikan sudah aktif**
 
 ```
 cat /proc/sys/net/ipv4/ip_forward
 ```
+
 Hasil:
 
 <img width="959" height="120" alt="image" src="https://github.com/user-attachments/assets/fb367501-af34-4cc2-92fa-2e511282b36e" />
@@ -201,7 +202,7 @@ jika hasilnya `1` → sudah aktif dan siap meneruskan traffic antar subnet.
 
 jika hasilnya `0` → berarti belum berhasil, ulangi langkah 1.
 
-###### Tes koneksi antar Entitas
+**Tes koneksi antar Entitas**
 
 Coba ping dari satu client ke client lain, contoh:
 - **Alice → Mika** (masih satu Switch, Switch1)
@@ -212,8 +213,8 @@ Coba ping dari satu client ke client lain, contoh:
 Caranya, dari konsol client (misal Alice):
 
 ```
-ping -c 3 <IP_Mika>
-ping -c 3 <IP_Chisa>
+ping -c 3 192.225.1.3 (Mika)
+ping -c 3 192.225.2.2 (Chisa)
 ```
 Hasil:
 
@@ -228,9 +229,9 @@ Semua client bisa saling ping (0% packet loss), baik yang satu switch maupun bed
 
 Untuk mengkonfigurasi firewall/iptables (NAT Masquerade) dan DNS resolver di Router Lain, agar setiap Entitas (Client) dapat terhubung ke internet secara mandiri dibuktikan dengan bisa ping ke 8.8.8.8 dan membuka domain google.com.
 
-###### Menyetting NAT & Firewall di Router-Lain
+**Setting NAT & Firewall di Router-Lain**
 
-Ketik perintah-perintah ini di konsol Router-Lain:
+Ketikan perintah-perintah ini di konsol Router-Lain:
 
 ```
 iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
@@ -240,17 +241,17 @@ iptables -A FORWARD -i eth3 -o eth0 -j ACCEPT
 iptables -A FORWARD -i eth0 -m state --state ESTABLISHED,RELATED -j ACCEPT
 ```
 
-###### Menyetting DNS di tiap Client
+**Setting DNS di tiap Client**
 
-Di setiap node Client (Alice, Mika, Chisa, Knights, Eiri), ketik:
+Di setiap node Client (Alice, Mika, Chisa, Knights, Eiri), ketikkan:
 
 ```
 echo "nameserver 8.8.8.8" > /etc/resolv.conf
 ```
 
-###### Tes dari tiap Client
+**Tes dari tiap Client**
 
-Di konsol masing-masing Client, coba:
+Di konsol masing-masing Client, coba ketikkan:
 ```
 ping -c 3 8.8.8.8
 ```
@@ -269,19 +270,19 @@ jadi jika kedua tes di atas berhasil di semua 5 Client, berarti Fase 4 sudah ber
 
 Hasil:
 
-###### Alice
+#### Alice
 <img width="959" height="446" alt="image" src="https://github.com/user-attachments/assets/1680a9ee-bba8-4997-8b4a-39dde25effa5" />
 
-###### Mika
+#### Mika
 <img width="959" height="448" alt="image" src="https://github.com/user-attachments/assets/efd853ef-3746-4da9-a9b1-3ec225aa25e9" />
 
-###### Chisa
+#### Chisa
 <img width="959" height="440" alt="image" src="https://github.com/user-attachments/assets/0ee36a97-33cd-40b8-812e-a82061bcc448" />
 
-###### Knights
+#### Knights
 <img width="959" height="449" alt="image" src="https://github.com/user-attachments/assets/e2a62a48-d0c8-41bf-b283-3b261efdacba" />
 
-###### Eiri
+#### Eiri
 <img width="959" height="448" alt="image" src="https://github.com/user-attachments/assets/f2a3b925-8ccd-4e47-8290-578c7b51af8a" />
 
 ---
@@ -289,7 +290,7 @@ Hasil:
 
 Untuk memastikan seluruh konfigurasi jaringan tetap tersimpan (persisten) meskipun semua node di-restart, serta membuat script verifikasi `/root/cek_status.sh` di Router Lain yang menampilkan ringkasan interface (`ip -br a`) dan status tabel NAT (`iptables -t nat -L -v -n`) setelah reboot.
 
-###### Memindahkan config NAT/forwarding ke file interfaces (Router-Lain)
+**Pindahkan config NAT/forwarding ke file interfaces (Router-Lain)**
 
 Edit `/etc/network/interfaces` di Router-Lain, ubah bagian eth0 jadi seperti ini (tambahkan baris `up`):
 
@@ -304,7 +305,7 @@ iface eth0 inet dhcp
     up iptables -A FORWARD -i eth0 -m state --state ESTABLISHED,RELATED -j ACCEPT
 ```
 
-###### Memindahkan config DNS ke file interfaces (di tiap Client)
+**Pindahkan config DNS ke file interfaces (di tiap Client)**
 
 Di file `/etc/network/interfaces` masing-masing Client (Alice, Mika, Chisa, Knights, Eiri), tambahkan baris `up` untuk DNS-nya juga:
 
@@ -314,33 +315,36 @@ up echo "nameserver 8.8.8.8" > /etc/resolv.conf
 
 Jadi DNS resolvernya gak akan hilang meski Client di-restart.
 
-###### Membuat script verifikasi otomatis
+**Buat script verifikasi otomatis**
 
-Di konsol Router-Lain, ketik:
+Di konsol Router-Lain, ketikan :
 
 ```bash
 mkdir -p /root
-cat > /root/cek_status.sh << 'EOF'
+cat > /root/cek_status.sh
+```
+```
 #!/bin/sh
 echo "=== Ringkasan Interface ==="
 ip -br a
 echo ""
 echo "=== Tabel NAT ==="
 iptables -t nat -L -v -n
-EOF
+```
+```
 chmod +x /root/cek_status.sh
 ```
 
 **Fungsinya:** 
 
-*(Script ini aman disimpan agar tidak ikut hilang saat container restart)*
+*(Script ini disimpan agar tidak ikut hilang saat container restart)*
 Script ini membuat satu file `cek_status.sh` yang kalau dijalankan, langsung nampilin dua hal sekaligus:
 
 **Ringkasan interface** (`ip -br a`) → cek IP tiap eth masih terpasang atau tidak
+
 **Tabel NAT** (`iptables -t nat -L -v -n`) → cek aturan MASQUERADE masih ada atau tidak
 
-
-###### Tes persistensi
+**Tes persistensi**
 
 1. **Restart** node Router-Lain (dan Client-nya)
 2. Setelah nyala lagi, jalankan:
