@@ -1153,9 +1153,9 @@ Paket Echo Replay di Wireshark (Type: 0, Code: 0)
 
 Untuk membuktikan kelemahan protokol Telnet dengan membuat akun phantom_user/wired_ghost di telnetd node Chisa, login dari node Eiri, menangkap sesi dengan Wireshark, menunjukkan kredensial plain text lewat Follow TCP Stream, serta menjelaskan mengapa tiap karakter terkirim dalam paket TCP terpisah.
 
-###### Menginstall telnetd di Chisa 
+**Install telnetd di Chisa**
 
-Cek dulu OS-nya:
+Masuk ke Console Chisa lalu Cek dulu OS-nya:
 
 ```
 cat /etc/os-release
@@ -1166,7 +1166,9 @@ apk update
 apk add busybox-extras
 ```
 
-###### Membuat user phantom_user
+**Buat user phantom_user**
+
+Tetap di Console Chisa:
 
 ```
 adduser -D phantom_user
@@ -1174,7 +1176,7 @@ passwd phantom_user
 ```
 Saat diminta password, ketik: `wired_ghost` (2x buat konfirmasi)
 
-###### Menjalankan service telnetd
+**Jalankan service telnetd**
 
 ```
 telnetd -p 23 -l /bin/login &
@@ -1193,7 +1195,7 @@ ss -tulnp | grep 23
 
 Harus muncul baris dengan status **LISTEN** di port 23.
 
-###### Menyalakan Wireshark DULU (sebelum login Eiri)
+**Jalakan Wireshark DULU (sebelum login Eiri)**
 
 1. Klik kanan kabel **Eiri ↔ Switch3** di GNS3
 2. **Start capture** → centang visualisasi → OK
@@ -1201,32 +1203,36 @@ Harus muncul baris dengan status **LISTEN** di port 23.
    ```
    telnet
    ```
-###### Login Telnet dari Eiri**
+**Login Telnet dari Eiri**
 
-Di konsol Eiri:
+Sekarang pindah ke Console Eiri:
 
 ```
-telnet [IP_CHISA]
+telnet 192.225.2.2
 ```
-Saat diminta:
+Saat diminta login:
 
 ```
 login: phantom_user
 Password: wired_ghost
 ```
-Setelah masuk, coba perintah simpel:
+Setelah masuk, coba jalankan:
 
 ```
 whoami
 ```
+Harus menunjukkan:
 
+```
+phantom_user
+```
 Lalu keluar:
 
 ```
 exit
 ```
 
-###### Membuka Follow TCP Stream di Wireshark**
+**Buka Follow TCP Stream di Wireshark**
 
 Dengan filter `telnet` masih aktif, klik salah satu paket telnet, lalu:
 
@@ -1245,7 +1251,7 @@ Password: wired_ghost
 
 Muncul **polos, bisa dibaca langsung** — inilah bukti kelemahan Telnet.
 
-###### Screenshot Bukti:
+**Screenshot Bukti:**
 
 <img width="1600" height="897" alt="WhatsApp Image 2026-09-15 at 15 41 10" src="https://github.com/user-attachments/assets/d2125d33-fb19-42d2-8491-46739889070e" />
 
@@ -1256,13 +1262,12 @@ Muncul **polos, bisa dibaca langsung** — inilah bukti kelemahan Telnet.
 
 Karena Telnet dirancang untuk emulasi terminal interaktif secara real-time, sehingga berjalan dalam mode **karakter-per-karakter**, bukan mode baris. Setiap kali user menekan satu tombol, client langsung mengirim karakter tersebut ke server dalam satu segmen TCP terpisah, tanpa menunggu baris selesai diketik. Ini memungkinkan fitur seperti echo langsung dari server dan respons instan terhadap tombol kontrol (misal Ctrl+C). Akibatnya, di Wireshark akan terlihat banyak paket TCP kecil beruntun  masing-masing hanya membawa 1 byte data  untuk tiap karakter password yang diketik.
 
-Bukti visualnya: di Packet List Pane (bukan Follow Stream), scroll ke bagian saat password diketik akan terlihat banyak paket kecil (panjang total frame sekitar 55-60 byte, isi data cuma 1 byte) beruntun dari Eiri ke Chisa, diselingi paket balasan echo dari Chisa.
+Bukti visualnya: di Packet List Pane (bukan di Follow Stream), scroll ke bagian saat password diketik akan terlihat banyak paket kecil (panjang total frame sekitar 55-60 byte, isi data cuma 1 byte) beruntun dari Eiri ke Chisa, diselingi paket balasan echo dari Chisa.
 
-###### ###### Screenshot Bukti:
+#### Screenshot Bukti:
 <img width="1600" height="899" alt="WhatsApp Image 2026-09-15 at 15 45 51" src="https://github.com/user-attachments/assets/c5319918-ff5a-4607-a2c3-74179a4af6c8" />
 
-
-###### Hentikan & simpan capture
+**Hentikan & simpan capture**
 
 1. Klik kanan kabel yang sama di GNS3 → **Stop capture**
 2. Di Wireshark: **File → Save As**, simpan dengan nama jelas, misal:
@@ -1275,7 +1280,7 @@ Bukti visualnya: di Packet List Pane (bukan Follow Stream), scroll ke bagian saa
 Untuk melakukan port scanning dari node Alice ke node Knights memakai Netcat pada port 22, 80 (terbuka), dan 7777 (tertutup), lalu menganalisis di Wireshark perbedaan TCP Flag antara port terbuka (SYN-ACK) dan port tertutup (RST-ACK).
 <img width="743" height="514" alt="WhatsApp Image 2026-09-15 at 16 21 29" src="https://github.com/user-attachments/assets/4d21e88c-3f54-44ef-9ea2-16ef1ff008ed" />
 
-###### Memastikan port 22 (SSH) terbuka di Knights
+**Pastikan port 22 (SSH) terbuka di Knights**
 
 Cek dulu apakah SSH server sudah jalan:
 
@@ -1284,7 +1289,7 @@ ps aux | grep sshd
 netstat -tulnp | grep :22
 ```
 
-Kalau belum ada, install & jalankan (di konsol **Knights**):
+Kalau belum ada, install & jalankan (di Console **Knights**):
 
 ```
 apk update
@@ -1299,9 +1304,9 @@ Cek lagi sudah listen:
 netstat -tulnp | grep :22
 ```
 
-###### Membuka port 80 (HTTP) di Knights
+**Buka port 80 (HTTP) di Knights**
 
-Paling gampang pakai Python built-in server (sudah dicontohkan di modul bagian 1.6.3):
+pakai Python built-in server (sudah dicontohkan di modul bagian 1.6.3):
 
 ```
 python3 -m http.server 80 &
@@ -1312,29 +1317,29 @@ Cek:
 netstat -tulnp | grep :80
 ```
 
-###### Memastikan port 7777 TIDAK dibuka apa-apa
+**Pastikan port 7777 TIDAK dibuka apa-apa**
 
-Tidak perlu ngapa-ngapain — selama tidak ada service yang sengaja dijalankan di port itu, otomatis **tertutup**. Cek buat mastiin:
+Tidak perlu ngapa-ngapain selama tidak ada service yang sengaja dijalankan di port itu, otomatis **tertutup**. Cek untuk memastikan:
 
 ```
 netstat -tulnp | grep :7777
 ```
-
+#Masukkan foto 
 Harusnya **kosong** (tidak ada output).
 
-###### Menyalakan Wireshark capture DULU
+**Nyalakan Wireshark capture DULU**
 
 1. Klik kanan kabel di topologi GNS3 yang menghubungkan **Alice ↔ Switch1** (atau bisa juga di link Knights, tergantung mana yang gampang diakses).
 2. **Start capture** → centang **Start the capture visualization program** → **OK**.
 3. Di kolom filter Wireshark, ketik:
    
 ```
-tcp
+  tcp
 ```
 
-###### Scan pakai Netcat dari Alice
+**Scan pakai Netcat dari Alice**
 
-Balik ke konsol **Alice**. Cek dulu `nc` ada:
+Kembaali ke konsol **Alice**. Cek dulu `nc` ada:
 
 ```
 which nc
@@ -1349,24 +1354,24 @@ apk add netcat-openbsd
 Scan tiap port satu-satu (biar gampang dibedain waktunya di Wireshark), pakai opsi `-z` (zero-I/O mode, khusus buat scanning) dan `-v` (verbose):
 
 ```
-nc -zv [IP_KNIGHTS] 22
+nc -zv 192.225.3.2 22
 ```
 
 Tunggu hasilnya (biasanya langsung muncul `open` atau `succeeded`), lalu:
 
 ```
-nc -zv [IP_KNIGHTS] 80
+nc -zv 192.225.3.2 80
 ```
 
 Lalu port yang tertutup:
 
 ```
-nc -zv [IP_KNIGHTS] 7777
+nc -zv 192.225.3.2 7777
 ```
+# masukkan foto semua hasil command terminalnya
 
-Kirim/screenshot hasil ketiga command ini — biasanya nc langsung bilang "open"/"succeeded" atau "refused"/"failed" di terminal.
 
-###### Membaca hasil di Wireshark
+**Membaca hasil di Wireshark**
 
 Balik ke Wireshark. Sekarang persempit filter biar gampang baca **cuma paket SYN dan balasannya**:
 
@@ -1376,14 +1381,14 @@ tcp.flags.syn==1
 
 Kamu akan lihat pola seperti ini per port:
 
-###### Untuk port 22 dan 80 (terbuka):
+##### Untuk port 22 dan 80 (terbuka):
 ```
 Alice → Knights   [SYN]           (Alice minta koneksi)
 Knights → Alice   [SYN, ACK]      (Knights: "oke, saya buka")
 Alice → Knights   [ACK] atau [RST] (Alice: "oke makasih", lalu tutup lagi karena cuma scan)
 ```
 
-###### Untuk port 7777 (tertutup):
+##### Untuk port 7777 (tertutup):
 ```
 Alice → Knights   [SYN]           (Alice minta koneksi)
 Knights → Alice   [RST, ACK]      (Knights: "gaada yang denger di sini, nolak")
@@ -1395,11 +1400,9 @@ Cara baca flag-nya di Wireshark: klik paket balasan dari Knights, expand bagian 
   
 - Kalau isinya `0x014 (RST, ACK)` → port tertutup
 
-##### Screenshot bukti
-![Uploading WhatsApp Image 2026-09-15 at 16.21.29.jpeg…]()
+**Screenshot bukti:**
 
-
-Ambil 3 screenshot, masing-masing menunjukkan paket balasan dari Knights dengan Packet Details Pane ter-expand di bagian TCP Flags:
+Ambil 3 screenshot, masing-masing menunjukkan paket balasan dari Knights dengan Packet Details Pane terexpand di bagian TCP Flags:
 
 1. **Balasan port 22** → tunjukkan flag `SYN, ACK`
    <img width="1600" height="898" alt="WhatsApp Image 2026-09-15 at 16 28 08" src="https://github.com/user-attachments/assets/294c311d-7778-4264-9b10-8b74e7cd368f" />
@@ -1410,7 +1413,7 @@ Ambil 3 screenshot, masing-masing menunjukkan paket balasan dari Knights dengan 
 3. **Balasan port 7777** → tunjukkan flag `RST, ACK`
    <img width="1600" height="899" alt="WhatsApp Image 2026-09-15 at 16 26 56" src="https://github.com/user-attachments/assets/ab8d2410-82cb-42c8-a010-0d3a23593cb7" />
 
-###### Hentikan & simpan capture
+**Hentikan & simpan capture**
 
 1. Klik kanan kabel yang sama di GNS3 → **Stop capture**
 2. Di Wireshark: **File → Save As**, simpan dengan nama jelas, misal:
@@ -1422,10 +1425,9 @@ soal12-alice-scan-knights.pcapng
 
 Menyuruh kita untuk menginstall OpenSSH di node Knights, membuat SSH key (ssh-keygen) di node Mika untuk user mika_admin, mengatur PasswordAuthentication no, lalu melakukan koneksi SSH dari Mika ke Knights, menangkap sesi dengan Wireshark, mengidentifikasi paket Protocol Version Exchange & Key Exchange, serta menjelaskan mengapa kredensial tidak terlihat plain text seperti di Telnet.
 
+**Install OpenSSH server di Knights**
 
-###### Menginstall OpenSSH server di Knights
-
-Cek OS dulu:
+Masuk ke Console Knights lalu Cek dulu OSnya:
 ```
 cat /etc/os-release
 ```
@@ -1435,7 +1437,7 @@ apk add openssh
 ssh-keygen -A
 ```
 
-###### Membuat user mika_admin di Knights
+**Buat user mika_admin di Knights**
 ```
 adduser -D mika_admin          # Alpine
 useradd -m -s /bin/bash mika_admin   # Debian
@@ -1445,7 +1447,7 @@ Set password sementara dulu (nanti dimatikan setelah key jalan):
 passwd mika_admin
 ```
 
-###### Menjalankan SSH server di Knights
+**Jalankan SSH server di Knights**
 ```
 /usr/sbin/sshd
 ```
@@ -1454,9 +1456,7 @@ Cek jalan:
 netstat -tulnp | grep :22
 ```
 
----
-
-###### Generate SSH key pair di Mika
+**Generate SSH key pair di Console Mika**
 
 Cek `ssh-keygen` ada:
 ```
@@ -1465,7 +1465,6 @@ which ssh-keygen
 Kalau belum ada:
 ```
 apk add openssh-client    # Alpine
-apt install -y openssh-client    # Debian
 ```
 Generate key pair:
 ```
@@ -1480,16 +1479,19 @@ Cek hasilnya:
 ```
 ls -la /root/.ssh/
 ```
-Harus muncul 2 file: `id_rsa` (private, **jangan pernah dikirim ke mana pun**) dan `id_rsa.pub` (public, boleh disebar).
+Harus muncul 2 file: `id_rsa` (private, jangan pernah dikirim ke mana pun) dan `id_rsa.pub` (public, boleh disebar).
 
-
-###### Menyalin public key dari Mika ke Knights
+**Salin public key dari Mika ke Knights**
 
 Di Mika, tampilkan isi public key:
 ```
 cat /root/.ssh/id_rsa.pub
 ```
-**Copy seluruh baris output ini** (mulai `ssh-rsa AAAA...` sampai akhir).
+Copy seluruh baris output ini (mulai `ssh-rsa AAAA...` sampai akhir).
+
+```
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCzqRx9O2ZkS2XLwpJ9ghRmCYZG4B0lZv/geAkDUT7cuULGlnG5IOE5igPT1ESCqcmUmY+dv3AKS+YjKN7xUk3JdXkwGkbhyCn2PWQ7uLOgtwW3rWD8jUKc1RqzzdAwXS8KYDTsH0U36ewhTUndFzNgu2tciNBKibMfqW4ShHlUM3iMuY0415S5W8jKND/fn/7or6tPHTSYzrjrqH/bKrP1zu4sw7+3FplcIhsEGex4eT7MVzsYl/uNfftk7NdUmcWu6f7s0aIKilVB0hlwOYjwD+2r2h1zZtXW6e0O5UPvPea7VAE5d12qKX43ZjuheKBRqlGnnjfJ3BAtP9WN5V6D
+```
 
 Balik ke Knights, buat folder `.ssh` untuk `mika_admin`:
 ```
@@ -1505,7 +1507,7 @@ chmod 600 /home/mika_admin/.ssh/authorized_keys
 chown -R mika_admin:mika_admin /home/mika_admin/.ssh
 ```
 
-######  Tes login pakai key (sebelum matikan password)
+**Tes login pakai key (sebelum matikan password)**
 
 Dari Mika:
 ```
@@ -1515,11 +1517,7 @@ Kalau berhasil masuk **tanpa diminta password** (atau cuma diminta konfirmasi fi
 ```
 exit
 ```
-*(Kalau masih diminta password, cek lagi permission folder `.ssh` atau isi `authorized_keys` di Step 5)*
-
----
-
-###### Matikan password authentication di Knights
+**Matikan password authentication di Knights**
 
 Edit config SSH:
 ```
@@ -1536,7 +1534,7 @@ pkill sshd
 /usr/sbin/sshd
 ```
 
-###### Menyalakan Wireshark
+**Nyalakan Wireshark**
 
 1. Klik kanan kabel **Mika ↔ Switch1** di GNS3
 2. **Start capture** → centang visualisasi → OK
@@ -1545,7 +1543,7 @@ pkill sshd
    ssh
    ```
 
-###### Login SSH lagi (buat direkam Wireshark)
+**Login SSH lagi (buat direkam Wireshark)**
 
 Dari Mika:
 ```
@@ -1560,8 +1558,7 @@ Keluar:
 exit
 ```
 
-
-###### Membaca hasil di Wireshark**
+**Baca hasil di Wireshark**
 
 Dengan filter `ssh` aktif, cari 3 tahap:
 
@@ -1578,18 +1575,11 @@ Cari paket dengan info `Key Exchange Init` dan `Elliptic Curve Diffie-Hellman Ke
 **C. Setelah KEX — semua terenkripsi**
 Paket berikutnya (termasuk proses autentikasi dan perintah `whoami`) akan muncul sebagai **"Encrypted Packet"** — klik salah satu, isinya cuma random bytes tidak terbaca.
 
-
-###### Follow TCP Stream (opsional, bagus buat laporan)
-
-Klik kanan salah satu paket SSH → **Follow → TCP Stream**. Bandingkan dengan hasil Soal 11 (Telnet) — di sini cuma sedikit teks terbaca (banner versi), sisanya karakter acak/binary. **Beda total** dengan Telnet yang semuanya kebaca jelas.
-
 ###### Analisis untuk laporan
 
 > Berbeda dengan Telnet yang mengirim setiap karakter (termasuk username dan password) sebagai plaintext murni, SSH melakukan proses **Key Exchange (KEX)** di awal sesi untuk menyepakati kunci enkripsi simetris antara client dan server secara aman (misal pakai Diffie-Hellman), tanpa pernah mengirim kunci rahasia lewat jaringan. Setelah KEX selesai, seluruh komunikasi berikutnya — termasuk proses autentikasi dan semua data sesi — dienkripsi pakai cipher yang disepakati (misal AES). Akibatnya, penyadap hanya melihat **Protocol Version Exchange** (info versi software, tidak sensitif) dan setelahnya murni **Encrypted Packet** yang tidak bisa dibaca tanpa kunci privat yang sah.
 
--
-
-###### screenshot Bukti
+**screenshot Bukti**
 1. Output `ssh -i ...` yang berhasil login **tanpa diminta password**
    <img width="1123" height="360" alt="WhatsApp Image 2026-09-16 at 07 52 31" src="https://github.com/user-attachments/assets/def40737-931d-4f19-be7b-74a0515526d8" />
 
@@ -1628,7 +1618,6 @@ client:
 
 6. Wireshark — salah satu paket **Key Exchange ** **Encrypted Packet** setelah KEX
    <img width="1600" height="839" alt="WhatsApp Image 2026-09-16 at 08 52 55" src="https://github.com/user-attachments/assets/ed278fd0-f338-42be-8577-bcc720526c81" />
-
 
 ###### Hentikan & simpan capture
 
