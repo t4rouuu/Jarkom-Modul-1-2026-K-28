@@ -1,4 +1,4 @@
-<img width="959" height="508" alt="image" src="https://github.com/user-attachments/assets/39b5fa00-a99e-46c7-ab08-a6b316b42468" />## Kelompok K-28
+## Kelompok K-28
 
 | Nama | NRP |
 | :---: | :---: |
