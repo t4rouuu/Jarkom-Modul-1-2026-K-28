@@ -4,7 +4,32 @@
 | :---: | :---: |
 | Maitasya Rohmatul Ula | 5027251026 |
 | A. Algifari Rantiga Isdar | 5027251084 |
+
 ---
+## Daftar Isi
+
+- [Soal 1 — Membangun Topologi The Wired](#soal-1)
+- [Soal 2 — Konfigurasi Internet pada Router-Lain](#soal-2)
+- [Soal 3 — Routing Antar Entitas](#soal-3)
+- [Soal 4 — NAT, Firewall, dan DNS](#soal-4)
+- [Soal 5 — Persistensi Konfigurasi](#soal-5)
+- [Soal 6 — Traffic Generator dan Wireshark](#soal-6)
+- [Soal 7 — FTP Server dan Access Control](#soal-7)
+- [Soal 8 — FTP Upload dan Analisis Wireshark](#soal-8)
+- [Soal 9 — FTP Download dan Read-Only](#soal-9)
+- [Soal 10 — ICMP dan Analisis Ping](#soal-10)
+- [Soal 11 — Telnet dan Plaintext Credential](#soal-11)
+- [Soal 12 — Port Scanning dengan Netcat](#soal-12)
+- [Soal 13 — SSH dan Key Authentication](#soal-13)
+- [Soal 14 — Analisis Brute Force](#soal-14)
+- [Soal 15 — Analisis Traffic FTP](#soal-15)
+- [Soal 16 — Analisis FTP Theft](#soal-16)
+- [Soal 17 — Analisis HTTP C2](#soal-17)
+- [Soal 18 — Analisis SMB Transfer](#soal-18)
+- [Soal 19 — Analisis SMTP Threat](#soal-19)
+- [Soal 20 — Analisis Traffic TLS](#soal-20)
+ 
+  ---
 ### soal 1
 
 Untuk mempersiapkan pembangunan The Wired, kita membangun topologi jaringan The Wired di GNS3, dengan Router Lain sebagai pusat yang terhubung ke tiga Switch: Switch 1 (menuju Alice & Mika), Switch 2 (menuju Chisa), dan Switch 3 (menuju Knights & Eiri) di mana kelima entitas tersebut dikonfigurasi sebagai Client, menggunakan prefix IP sesuai kelompok masing-masing.
