@@ -1,3 +1,5 @@
+#knights_report.txt
+
 #!/bin/sh
 set -eu
 SERVER="${1:-192.225.2.2}"
