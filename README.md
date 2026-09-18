@@ -1,4 +1,4 @@
-## Kelompok K-28
+<img width="959" height="508" alt="image" src="https://github.com/user-attachments/assets/39b5fa00-a99e-46c7-ab08-a6b316b42468" />## Kelompok K-28
 
 | Nama | NRP |
 | :---: | :---: |
@@ -2127,125 +2127,363 @@ Screenshot Bukti:
 
 Untuk menganalisis file capture `wired_smb_transfer.pcapng` ([link](https://drive.google.com/file/d/1XBtKWtNM_RrSBTp2e3O5vBdiklcPNsKs/view?usp=sharing)) guna menemukan protokol yang dieksploitasi, IP pengirim & penerima, folder tujuan malware, serta nama file executable-nya — lalu validasi temuan lewat `nc [IP_Group] 3405`.
 
- Screenshot Bukti:
- 
- SMB2
- 
-<img width="1600" height="887" alt="WhatsApp Image 2026-09-16 at 16 37 47" src="https://github.com/user-attachments/assets/303c9f43-7983-480f-ac80-e6a67cc96d2e" />
+**Buka file di Wireshark**
 
-field dialect
+```
+File → Open → pilih wired_smb_transfer.pcapng yang telah diunduh
+```
+Tunggu sampai semua paket termuat di Packet List Pane.
 
-<img width="1600" height="896" alt="WhatsApp Image 2026-09-16 at 16 39 20" src="https://github.com/user-attachments/assets/185aeeeb-504c-48f5-ba9c-e090295aa1fa" />
+**Filter cuma paket SMB2**
+1. Klik kolom putih panjang di bagian atas (kolom filter).
+2. Ketik:
+```
+smb2
+```
+3. Tekan **Enter**.
+4. Sekarang tabel di atas cuma menampilkan paket-paket SMB2 saja.
 
-ip pengirim dan penerima
+**Screenshot Bukti:**
 
-<img width="1600" height="899" alt="WhatsApp Image 2026-09-16 at 16 40 46" src="https://github.com/user-attachments/assets/09774a0a-753b-44be-b5f6-63fe980d8d6b" />
+hasil filter smb2 dan nama protokol yang dieksploitasi
 
-tree connect request
+<img width="959" height="508" alt="image" src="https://github.com/user-attachments/assets/4ecc6991-9078-43f5-a08a-047ae1934a80" />
 
-<img width="1600" height="902" alt="WhatsApp Image 2026-09-16 at 16 42 08" src="https://github.com/user-attachments/assets/da075e31-2094-4334-a6c4-8cfce042c8f1" />
+**Cari IP pengirim dan penerima**
+1. Lihat kolom **Source** dan **Destination** di baris paling atas (paket Negotiate Protocol).
+2. **Source** = IP pengirim (Eiri/penyerang): `10.7.3.100`
+3. **Destination** = IP penerima (korban): `10.7.1.50`
 
-nama file malware
+**Cari share/folder tujuan (Tree Connect)**
+1. Cari baris dengan Info:
+```
+Tree Connect Request Tree: \\10.7.1.50\ADMIN$
+```
+2. **Klik sekali** di baris itu, lalu expand **SMB2 (Server Message Block Protocol version 2)** di panel tengah.
+3. Cari baris **Tree:** yang menunjukkan path share administratif `ADMIN$`.
+
+**Screenshot Bukti:**
+
+bukti share ADMIN$ yang dipakai penyerang
+
+<img width="959" height="503" alt="image" src="https://github.com/user-attachments/assets/a7091f38-da23-4c69-9daf-22d7552c92a0" />
+
+**Cari folder tujuan & nama file (Create Request)**
+1. Cari baris dengan Info:
+```
+Create Request File: System32\wired_trojan_payload.exe
+```
+2. **Klik sekali** di baris itu.
+3. Expand **SMB2** di panel tengah, cari baris **Filename:** yang menunjukkan path lengkap file yang dibuat.
+
+**Screenshot Bukti:**
+
+folder tujuan (System32) dan nama file malware (wired_trojan_payload.exe)
 
 <img width="1600" height="899" alt="WhatsApp Image 2026-09-16 at 16 43 19" src="https://github.com/user-attachments/assets/7a960c58-58c9-4812-b0ac-69209bd1f3c8" />
 
-## Validasi ke socket server
+**Cari isi data yang ditulis (Write Request)**
+1. Cari baris dengan Info:
+```
+Write Request Len:XXX Offset:0 File: System32\wired_trojan_payload.exe
+```
+2. **Klik sekali** di baris itu, lihat bagian **Leftover Capture Data** atau **Write Data** di panel tengah/bawah — akan terlihat teks berulang `WIRED_PROTOCOL_7_EXPLOIT_PAYLOAD` sebagai isi dummy file malware.
 
-### Step 9 — Jalankan
+**Screenshot Bukti:**
+
+isi data file malware yang ditransfer
+
+<img width="959" height="503" alt="image" src="https://github.com/user-attachments/assets/38c9fb83-a67c-4ef5-af75-c4af664753b4" />
+
+**Lihat percakapan lengkap**
+1. Klik kanan (klik tombol kanan mouse) pada salah satu paket SMB2 tadi.
+2. Arahkan ke **Follow** → klik **TCP Stream**.
+3. Jendela baru muncul, tunjukkan seluruh proses (Negotiate → Session Setup → Tree Connect → Create → Write → Close) dalam satu tampilan (isinya campur teks & data biner karena SMB protokol biner).
+
+**Screenshot Bukti:**
+
+percakapan lengkap sesi SMB antara client dan server
+
+<img width="662" height="513" alt="image" src="https://github.com/user-attachments/assets/79a5e6db-834c-4b90-aa79-e06adf463b66" />
+
+**Validasi ke socket server**
 
 Sekarang coba jalankan:
 ```
 nc 10.4.89.247 3405
-
 ```
 Tekan Enter.
 
-Socket ini akan menanyakan beberapa field satu per satu (IP penyerang, IP:port target, password, versi server). Jalankan dulu, lalu muncul di layar prompt pertanyaannya.
+Socket ini akan menanyakan beberapa field satu per satu (nama protokol, IP pengirim, IP penerima, folder tujuan, nama file). Jalankan dulu, lalu muncul di layar prompt pertanyaannya.
 
-## Hasil Analisis `soal18
+## Hasil Analisis `soal18_wired_smb_transfer.pcapng`
 
-Screenshot Bukti:
+| Yang dicari | Jawaban |
+|---|---|
+| Nama protokol yang dieksploitasi | `SMB2` |
+| IP pengirim (Eiri) | `10.7.3.100` |
+| IP penerima (korban) | `10.7.1.50` |
+| Folder tujuan | `System32` (via share `\\10.7.1.50\ADMIN$`) |
+| Nama file malware | `wired_trojan_payload.exe` |
 
-<img width="954" height="1077" alt="WhatsApp Image 2026-09-16 at 16 50 49" src="https://github.com/user-attachments/assets/338cf973-e6f6-4bd0-af60-adda65630471" />
+**Screenshot Bukti:**
+
+<img width="954" height="1077" alt="WhatsApp Image 2026-09-16 at 16 50 49 (1)" src="https://github.com/user-attachments/assets/bcf1a621-bb60-40a6-8f9e-8ac90d92c430" />
 
 ---
 ### soal 19
 
 Untuk menganalisis file capture `wired_smtp_threat.pcap` ([link](https://drive.google.com/drive/folders/1RAW0cMoGDDStPyFHeJ_0t9kkoLGBsCmH?usp=sharing)) guna menemukan email korban, password yang diklaim bocor, jenis malware, batas waktu (hari), serta MailClientID — lalu validasi temuan lewat `nc [IP_Group] 3406`.
 
-Screenshot Bukti:
+**Buka file di Wireshark**
 
- SMTP AWAL
+```
+File → Open → pilih wired_smtp_threat.pcapng yang telah diunduh
+```
+Tunggu sampai semua paket termuat di Packet List Pane.
 
- <img width="1600" height="899" alt="WhatsApp Image 2026-09-16 at 17 04 33" src="https://github.com/user-attachments/assets/4a4a19b3-f60a-46ee-85d9-9a38fc253362" />
- 
-converstation sus
+**Filter cuma paket SMTP**
+1. Klik kolom putih panjang di bagian atas (kolom filter).
+2. Ketik:
+```
+smtp
+```
+3. Tekan **Enter**.
+4. Akan muncul beberapa sesi SMTP berbeda — perhatikan ada 3-4 percakapan berbeda tercampur.
 
-<img width="1600" height="901" alt="WhatsApp Image 2026-09-16 at 17 06 34" src="https://github.com/user-attachments/assets/5f5b6225-42ab-4f50-b348-53dfbe09b0f3" />
+**Screenshot Bukti:**
 
+hasil filter smtp, terlihat beberapa sesi berbeda
 
-filter ip addr == 203.0.113.100
+<img width="956" height="504" alt="image" src="https://github.com/user-attachments/assets/684a3537-c408-4d82-83a2-a4acb93adcbb" />
 
-<img width="1600" height="898" alt="WhatsApp Image 2026-09-16 at 17 10 00" src="https://github.com/user-attachments/assets/311e9895-effa-49fa-aae1-4034d54ab303" />
+**Cari sesi yang mencurigakan**
+1. Lihat kolom **Source** dan **Destination** — cari sesi dengan IP asing (bukan `10.7.2.x` internal), yaitu dari `185.234.72.19` menuju `203.0.113.100`.
+2. Cari baris dengan Info:
+```
+RCPT TO:<victim@protocol7.co.jp>
+```
+3. **Klik sekali** di baris itu — ini konfirmasi email korban.
 
-isi pesan attacker
+**Screenshot Bukti:**
 
-<img width="1600" height="898" alt="WhatsApp Image 2026-09-16 at 17 11 41" src="https://github.com/user-attachments/assets/df0864eb-67ba-4e79-a5f4-5aaa8669efe8" />
+email korban yang ditargetkan
 
-## Validasi ke socket server
+<img width="959" height="508" alt="image" src="https://github.com/user-attachments/assets/50580432-af4b-45ff-aec1-840bef5553bb" />
 
-### Step 9 — Jalankan
+**Buka isi pesan lengkap**
+1. Klik kanan pada salah satu paket di sesi ini (misal baris `DATA` atau `MAIL FROM`).
+2. Arahkan ke **Follow** → klik **TCP Stream**.
+3. Jendela baru muncul menampilkan seluruh isi email — password yang diklaim bocor, jenis malware, batas waktu, dan MailClientID semua ada dalam satu tampilan ini.
+
+**Screenshot Bukti:**
+
+isi lengkap email pemerasan (password, ransomware, batas waktu, MailClientID)
+
+<img width="665" height="512" alt="image" src="https://github.com/user-attachments/assets/1e07ce31-df66-4f1c-a92b-37a8459fb5de" />
+
+**Validasi ke socket server**
 
 Sekarang coba jalankan:
 ```
 nc 10.4.89.247 3406
-
 ```
 Tekan Enter.
 
-Socket ini akan menanyakan beberapa field satu per satu (IP penyerang, IP:port target, password, versi server). Jalankan dulu, lalu muncul di layar prompt pertanyaannya.
+Socket ini akan menanyakan beberapa field satu per satu (email korban, password, jenis malware, batas waktu, MailClientID). Jalankan dulu, lalu jawab sesuai tabel di atas.
 
-## Hasil Analisis `soal19
+## Hasil Analisis `soal19_wired_smtp_threat.pcapng`
 
-Screenshot Bukti:
+| Yang dicari | Jawaban |
+|---|---|
+| Email korban | `victim@protocol7.co.jp` |
+| Password bocor | `pr0tocol_7_user` |
+| Jenis malware | `ransomware` |
+| Batas waktu | `72` (jam) atau `3` (hari) — cek format yang diminta socket |
+| MailClientID | `7719980706` |
+
+**Screenshot Bukti:**
 
 <img width="1170" height="605" alt="WhatsApp Image 2026-09-16 at 17 16 49" src="https://github.com/user-attachments/assets/0e6254db-4343-4371-968f-281b7856fddf" />
 
 ---
-
-soal 20
+### soal 20
 
 Untuk menganalisis file capture `wired_tls_decrypt.pcapng` bersama `keyslogfile.txt` ([link](https://drive.google.com/file/d/1F7xN3ydIrA-pZaCb32MGseVeHKt-D_qZ/view?usp=sharing)) guna menemukan versi TLS, domain (SNI), IP server HTTPS penyerang, User-Agent, serta method & path HTTP tersembunyi — lalu validasi temuan lewat `nc [IP_Group] 3407`.
 
-Screenshot Bukti:
+**Buka file di Wireshark**
 
-version
+```
+File → Open → pilih wired_tls_decrypt.pcapng yang telah diunduh
+```
+Tunggu sampai semua paket termuat di Packet List Pane.
+
+## Masukkan Keylog untuk Dekripsi TLS
+
+Agar isi komunikasi HTTPS dapat dibaca, Wireshark perlu menggunakan file `keyslogfile.txt`.
+
+1. Pilih:
+
+```text
+Edit → Preferences → Protocols → TLS
+```
+
+2. Pada bagian **(Pre)-Master-Secret log filename**, pilih:
+
+```text
+keyslogfile.txt
+```
+
+3. Klik **OK**.
+
+File `keyslogfile.txt` berisi `CLIENT_RANDOM` dan secret yang digunakan untuk membantu Wireshark mendekripsi sesi TLS.
+
+**Screenshot Bukti:**
+
+<img width="858" height="707" alt="WhatsApp Image 2026-09-16 at 17 42 31" src="https://github.com/user-attachments/assets/65ba9045-c0dd-4279-9f17-e7d968ec665d" />
+
+
+## Filter Paket TLS
+
+Pada kolom filter Wireshark, masukkan:
+
+```text
+tls
+```
+
+Kemudian tekan **Enter**. Akan terlihat paket komunikasi TLS antara client dan server HTTPS.
+
+**Screenshot Bukti:**
+
+Hasil filter `tls`, terlihat komunikasi TLS antara client dan server HTTPS.
+
+<img width="959" height="508" alt="image" src="https://github.com/user-attachments/assets/f12a1960-91a9-4506-a640-29573491ed04" />
+
+## Mencari Versi TLS dan SNI
+
+Klik paket **Client Hello**.
+
+Pada **Packet Details Pane**, buka:
+
+```text
+Transport Layer Security
+└── Handshake Protocol: Client Hello
+```
+
+Kemudian cari bagian:
+
+```text
+Extension: server_name
+```
+
+Pada bagian tersebut dapat dilihat nama domain atau **SNI** yang diakses.
+
+Hasil analisis:
+
+```text
+SNI / Domain: example.com
+```
+
+**Screenshot Bukti:**
+
+Paket Client Hello yang menunjukkan SNI/domain `example.com`.
+
+<img width="1600" height="898" alt="WhatsApp Image 2026-09-16 at 17 26 53" src="https://github.com/user-attachments/assets/5989dfa5-7d98-492a-8148-5d8edaee84c9" />
+
+## Menentukan Versi TLS yang Dinegosiasikan
+
+Klik paket **Server Hello**.
+
+Kemudian buka:
+
+```text
+Transport Layer Security
+└── Handshake Protocol: Server Hello
+```
+
+Versi protokol yang digunakan dapat dilihat pada bagian **Version**.
+
+Hasil analisis:
+
+```text
+TLS Version: TLS 1.2
+```
+
+Cipher suite yang digunakan:
+
+```text
+TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+```
+
+**Screenshot Bukti:**
+
+Paket Server Hello yang menunjukkan TLS 1.2 dan cipher suite yang digunakan.
 
 <img width="1600" height="900" alt="WhatsApp Image 2026-09-16 at 17 21 45" src="https://github.com/user-attachments/assets/a35cedb0-4deb-4ae6-8e9e-a8f5a8b7e783" />
 
-server name
+## Menentukan IP Server HTTPS
 
-<img width="1600" height="898" alt="WhatsApp Image 2026-09-16 at 17 26 53" src="https://github.com/user-attachments/assets/5989dfa5-7d98-492a-8148-5d8edaee84c9" />
+Dari komunikasi pada capture, server HTTPS dapat dilihat dari alamat tujuan pada paket TLS.
+
+Hasil analisis:
+
+```text
+Client : 10.9.0.2
+Server : 93.184.216.34
+Port   : 443
+```
+
+Dengan demikian, IP server HTTPS adalah:
+
+```text
+93.184.216.34
+```
+
+Untuk memfilter komunikasi dengan server tersebut dapat digunakan:
+
+```text
+ip.addr == 93.184.216.34
+```
+
+atau:
+
+```text
+tcp.port == 443
+```
+
+## Membaca HTTP Request yang Tersembunyi
+
+Setelah `keyslogfile.txt` dikonfigurasi, Wireshark dapat menggunakan keylog tersebut untuk mendekripsi lalu lintas TLS.
+
+Cari paket **Application Data** yang berasal dari client menuju server.
+
+Setelah data berhasil didekripsi, ditemukan HTTP request:
+
+```http
+HEAD / HTTP/1.1
+Host: example.com
+User-Agent: curl/7.62.0
+Accept: */*
+```
+
+Dari HTTP request tersebut diperoleh:
+
+| Informasi   | Hasil         |
+| ----------- | ------------- |
+| HTTP Method | `HEAD`        |
+| HTTP Path   | `/`           |
+| Host        | `example.com` |
+| User-Agent  | `curl/7.62.0` |
+
+**Screenshot Bukti:**
+
+<img width="1600" height="899" alt="WhatsApp Image 2026-09-16 at 17 32 17" src="https://github.com/user-attachments/assets/8d94062c-63ad-4e33-962d-20bd11c59c3b" />
 
 filter http
 
 <img width="1333" height="1077" alt="WhatsApp Image 2026-09-16 at 17 31 25" src="https://github.com/user-attachments/assets/81a41fe2-510d-469b-9f84-c9a2c8cb6fb7" />
 
-User Agent
-
-<img width="1600" height="899" alt="WhatsApp Image 2026-09-16 at 17 32 17" src="https://github.com/user-attachments/assets/8d94062c-63ad-4e33-962d-20bd11c59c3b" />
-
-TLS
-
-<img width="858" height="707" alt="WhatsApp Image 2026-09-16 at 17 42 31" src="https://github.com/user-attachments/assets/65ba9045-c0dd-4279-9f17-e7d968ec665d" />
-
-FILTER TLS
-
-<img width="1331" height="1074" alt="WhatsApp Image 2026-09-16 at 17 43 23" src="https://github.com/user-attachments/assets/4a7f87b7-27da-48a6-9428-73a7c5cf48b8" />
-
 ## Validasi ke socket server
-
-### Step 9 — Jalankan
 
 Sekarang coba jalankan:
 ```
@@ -2256,7 +2494,18 @@ Tekan Enter.
 
 Socket ini akan menanyakan beberapa field satu per satu (IP penyerang, IP:port target, password, versi server). Jalankan dulu, lalu muncul di layar prompt pertanyaannya.
 
-## Hasil Analisis `soal20
+## Hasil Analisis `wired_tls_decrypt.pcapng`
+
+| No. | Yang Dicari                   | Jawaban                                 |
+| --: | ----------------------------- | --------------------------------------- |
+|   1 | Versi TLS yang dinegosiasikan | `TLS 1.2`                               |
+|   2 | SNI / Nama Domain             | `example.com`                           |
+|   3 | IP Server HTTPS               | `93.184.216.34`                         |
+|   4 | User-Agent                    | `curl/7.62.0`                           |
+|   5 | HTTP Request Method           | `HEAD`                                  |
+|   6 | HTTP Request Path             | `/`                                     |
+|   7 | Host                          | `example.com`                           |
+|   8 | Cipher Suite                  | `TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256` |
 
 Screenshot Bukti:
 
