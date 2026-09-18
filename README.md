@@ -34,26 +34,26 @@
 
 Untuk mempersiapkan pembangunan The Wired, kita membangun topologi jaringan The Wired di GNS3, dengan Router Lain sebagai pusat yang terhubung ke tiga Switch: Switch 1 (menuju Alice & Mika), Switch 2 (menuju Chisa), dan Switch 3 (menuju Knights & Eiri) di mana kelima entitas tersebut dikonfigurasi sebagai Client, menggunakan prefix IP sesuai kelompok masing-masing.
 
-**Menyiapkan nodenya**
+**Siapkan nodenya**
 
 Tarik node ke workspace GNS3:
-- 1 Router (kasih 4 adapter/interface)
+- 1 (alpinet) Router (kasih 4 adapter/interface)
 - 1 NAT node
 - 3 Switch (Ethernet switch)
-- 5 Client (1 adapter aja tiap client)
+- 5 (alpinet) Client (1 adapter aja tiap client)
 
-###### Memberikan Rename semua node sesuai perannya:
+**Rename semua node sesuai perannya:**
 
 `Router-Lain`, `Switch1`, `Switch2`, `Switch3`, `Alice`, `Mika`, `Chisa`, `Knights`, `Eiri`
 
-###### Menyambungkan kabelnya
+**Sambungkan kabelnya**
 
 - NAT → Router-Lain (di eth0)
 - Switch1 → Router-Lain (di eth1), lalu Switch1 → Alice, dan Switch1 → Mika
 - Switch2 → Router-Lain (di eth2), lalu Switch2 → Chisa
 - Switch3 → Router-Lain (di eth3), lalu Switch3 → Knights, dan Switch3 → Eiri
 
-###### Hasil Topologi:
+**Hasil Topologi:**
 
 <img width="957" height="406" alt="image" src="https://github.com/user-attachments/assets/7d9b4ff3-df07-47a6-8a0a-ee98bc473473" />
 
@@ -63,9 +63,11 @@ Tarik node ke workspace GNS3:
 
 Untuk menghubungkan Router Lain ke jaringan internet publik melalui NAT/DHCP pada interface eth0, karena The Wired saat itu masih terisolasi dari dunia luar.
 
-###### Mengedit file konfigurasi
+maka kita melakukan konfigurasi di setiap alpinet yang di gunakan,
 
-Buka file `/etc/network/interfaces` di Router-Lain, lalu isi seperti ini:
+**Edit file konfigurasi**
+
+Buka file `/etc/network/interfaces` untuk config di Router-Lain, lalu isi seperti ini:
 
 ```
 auto eth0
@@ -87,16 +89,14 @@ iface eth3 inet static
     netmask 255.255.255.0
 ```
 
-###### Penjelasan :
+**konfigurasi Cleint dan uji coba**
 
-- `eth0` → **dhcp** (otomatis dapat IP dari NAT, ini jalur keluar ke internet)
-- `eth1` → IP tetap `192.225.1.1` (gerbang buat Switch1 → Alice & Mika)
-- `eth2` → IP tetap `192.225.2.1` (gerbang buat Switch2 → Chisa)
-- `eth3` → IP tetap `192.225.3.1` (gerbang buat Switch3 → Knights & Eiri)
+dengan Menyalakan semua node, lalu di tiap node ketik:
+```
+ip a
+```
 
-konfigurasi Cleint:
-
-###### Alice
+#### Alice
 
 ```
 auto eth0
@@ -105,10 +105,11 @@ iface eth0 inet static
     netmask 255.255.255.0
     gateway 192.225.1.1
 ```
+Hasil:
 
 <img width="959" height="225" alt="image" src="https://github.com/user-attachments/assets/3fb6adce-7743-4804-b2ea-683b91e8f5e4" />
 
-###### Mika
+#### Mika
 
 ``` auto eth0
 iface eth0 inet static
@@ -116,9 +117,11 @@ iface eth0 inet static
     netmask 255.255.255.0
     gateway 192.225.1.1
 ```
+Hasil:
+
 <img width="959" height="230" alt="image" src="https://github.com/user-attachments/assets/4afb5358-2abf-4885-bf70-724f35b76339" />
 
-###### Chisa
+#### Chisa
 
 ```auto eth0
 iface eth0 inet static
@@ -126,9 +129,11 @@ iface eth0 inet static
     netmask 255.255.255.0
     gateway 192.225.1.1
 ```
+Hasil:
+
 <img width="959" height="226" alt="image" src="https://github.com/user-attachments/assets/0c2e7855-3952-41ea-a939-8b456ed9a793" />
 
-###### knights
+#### knights
 
 ```auto eth0
 iface eth0 inet static
@@ -136,6 +141,8 @@ iface eth0 inet static
     netmask 255.255.255.0
     gateway 192.225.1.1
 ```
+Hasil:
+
 <img width="959" height="230" alt="image" src="https://github.com/user-attachments/assets/28322479-90bd-49ac-b423-22f34e3d89cb" />
 
 ###### Eiri
@@ -146,9 +153,11 @@ iface eth0 inet static
     netmask 255.255.255.0
     gateway 192.225.1.1
 ```
+Hasil:
+
 <img width="959" height="234" alt="image" src="https://github.com/user-attachments/assets/1f7372be-50cd-4b09-aca5-483fe6d3466a" />
 
-###### Tes koneksi internet
+**Tes koneksi internet**
 
 Di konsol Router-Lain, ketik:
 
@@ -156,7 +165,7 @@ Di konsol Router-Lain, ketik:
 ping -c 3 8.8.8.8
 ```
 
-**jika hasilnya seperti ini:**
+**hasilnya seperti ini:**
 
 <img width="959" height="404" alt="image" src="https://github.com/user-attachments/assets/7b3fb622-0cb6-49cd-acf0-93d89362f668" />
 
