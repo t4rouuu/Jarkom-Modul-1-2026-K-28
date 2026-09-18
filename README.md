@@ -1137,7 +1137,7 @@ Code: 0
 
 #### Bukti screenshot:
 
-#Masukkan ss
+<img width="1150" height="775" alt="WhatsApp Image 2026-09-18 at 15 58 18" src="https://github.com/user-attachments/assets/662b4392-9f1b-426a-b444-5e49404f2abe" />
 
 Paket Echo Replay di Wireshark (Type: 0, Code: 0)
 
@@ -1368,8 +1368,9 @@ Lalu port yang tertutup:
 ```
 nc -zv 192.225.3.2 7777
 ```
-# masukkan foto semua hasil command terminalnya
-
+ semua hasil command terminalnya
+ 
+ <img width="555" height="110" alt="WhatsApp Image 2026-09-18 at 16 03 01" src="https://github.com/user-attachments/assets/db8ef0e1-7f48-475f-9783-346d05958a55" />
 
 **Membaca hasil di Wireshark**
 
@@ -1632,18 +1633,14 @@ client:
 
 Untuk menganalisis file capture `wired_bruteforce.pcapng` ([link](https://drive.google.com/drive/folders/1-MloxOyGauBYglc6TKTQ84VeILvJjjG2?usp=sharing)) guna menemukan IP penyerang, target IP & port yang diserang, password `lain_admin` yang berhasil ditembus, serta web server software & versinya — lalu validasi temuan lewat `nc [IP_Group] 3401`.
 
+**Buka file capture di Wireshark**
 
-**Step 1: Buka file capture di Wireshark**
-
-Buka aplikasi Wireshark, lalu:
 ```
 File → Open → pilih wired_bruteforce.pcapng
 ```
 Tunggu sampai semua paket termuat di Packet List Pane.
 
----
-
-**Step 2: Filter semua percobaan login (POST request)**
+**Filter semua percobaan login (POST request)**
 
 Di kolom display filter bagian atas, ketik:
 ```
@@ -1651,36 +1648,33 @@ http.request.method == "POST"
 ```
 Tekan Enter. Wireshark akan menyaring dan hanya menampilkan paket-paket **request POST** — ini adalah semua percobaan login yang dikirim penyerang ke `/login.php`. Kalau brute-force-nya besar, di sini akan terlihat puluhan/ratusan baris paket serupa.
 
-*(Opsional, biar lebih spesifik: tambahkan `and ip.addr==172.26.7.50` untuk fokus hanya ke traffic dari IP penyerang)*
+*(Agar lebih spesifik: tambahkan `and ip.addr==172.26.7.50` untuk fokus hanya ke traffic dari IP penyerang)*
 
----
+**Screenshot Bukti:**
 
-**Step 3: Cari percobaan yang berhasil (respons 200 OK)**
+Packet List dengan filter `http.request.method == "POST"` aktif
+   
+<img width="1600" height="839" alt="WhatsApp Image 2026-09-16 at 11 29 10" src="https://github.com/user-attachments/assets/612133ec-e5ba-45f0-b7b0-356e4cc73669" />
+
+**Cari percobaan yang berhasil (respons 200 OK)**
 
 Klik salah satu paket POST di Packet List, lalu:
 1. Klik kanan paket tersebut
 2. Pilih **Follow → HTTP Stream** (atau **Follow → TCP Stream** kalau versi Wireshark tidak punya opsi HTTP Stream)
 
-Jendela baru akan terbuka menampilkan pasangan request-response lengkap dalam satu tampilan. Karena brute-force biasanya banyak percobaan, kamu perlu **cek stream satu-per-satu** (ada tombol navigasi "Stream" di pojok kanan bawah jendela Follow, klik panah untuk pindah ke stream berikutnya) sampai ketemu yang responsnya:
-```
-HTTP/1.1 200 OK
-```
-bukan:
-```
-HTTP/1.1 401 Unauthorized
-```
-
-Di stream yang berhasil ini, kamu akan melihat body request-nya berisi username & password yang berhasil menembus login — screenshot jendela Follow Stream ini sebagai bukti utama.
-
-**Cara lebih cepat (opsional):** ketik filter khusus untuk langsung lompat ke respons sukses:
+ketik filter khusus untuk langsung lompat ke respons sukses:
 ```
 http.response.code == 200
 ```
 Klik paket yang muncul, lalu klik kanan → Follow → HTTP Stream untuk lihat pasangan request-nya.
 
----
+**Screenshot Bukti:**
 
-**Step 4: Cari versi web server dari response header**
+Follow HTTP/TCP Stream yang menunjukkan request+response **200 OK** berisi kredensial berhasil
+
+<img width="1600" height="836" alt="WhatsApp Image 2026-09-16 at 11 38 03" src="https://github.com/user-attachments/assets/1fea3e26-e71c-405c-a6ee-9e0b395a9c2e" />
+
+**Cari versi web server dari response header**
 
 Ganti filter jadi:
 ```
@@ -1696,13 +1690,14 @@ Cari baris:
 ```
 Server: Apache/2.4.62
 ```
-Ini menunjukkan software dan versi web server yang dipakai target. Kalau ada, catat juga baris `X-Powered-By` (biasanya menunjukkan versi bahasa pemrograman backend, misal PHP).
 
-Screenshot Packet Details Pane ini dengan bagian HTTP ter-expand supaya baris `Server:` kelihatan jelas.
+**Screenshot Bukti:**
 
----
+Packet Details dengan header `Server: Apache/2.4.62` ter-expand
 
-**Step 5: Buktikan pola brute-force (banyak percobaan gagal)**
+   <img width="1284" height="1014" alt="WhatsApp Image 2026-09-16 at 11 38 54" src="https://github.com/user-attachments/assets/84bdd04a-db48-47fa-bdea-32354c830f35" />
+   
+**Buktikan pola brute-force (banyak percobaan gagal)**
 
 Ganti filter jadi:
 ```
@@ -1710,35 +1705,29 @@ http.response.code == 401
 ```
 Wireshark akan menampilkan **hanya** paket-paket dengan respons gagal (Unauthorized). Kalau brute-force-nya intensif, di sini akan terlihat jumlah paket yang banyak dan berurutan — ini bukti visual bahwa penyerang mencoba banyak kombinasi kredensial secara berulang sebelum akhirnya berhasil.
 
-Screenshot Packet List Pane ini (dengan filter `http.response.code == 401` kelihatan di kolom filter) untuk menunjukkan volume percobaan gagalnya.
+**Screenshot Bukti:**
 
-*(Tips tambahan: klik menu Statistics → Protocol Hierarchy atau Statistics → Conversations untuk melihat total jumlah request POST yang terkirim — ini bisa jadi angka pendukung di laporan, misal "56 percobaan sebelum berhasil")*
+paket-paket http.response.code == 401
 
----
+<img width="959" height="503" alt="image" src="https://github.com/user-attachments/assets/83281e15-7931-4eab-a599-b0c88e8ba1cf" />
 
-**screenshot Bukti:**
-1. Packet List dengan filter `http.request.method == "POST"` aktif
-   
-<img width="1600" height="839" alt="WhatsApp Image 2026-09-16 at 11 29 10" src="https://github.com/user-attachments/assets/612133ec-e5ba-45f0-b7b0-356e4cc73669" />
+klik menu Statistics → Protocol Hierarchy untuk melihat total jumlah request POST yang terkirim 
 
-2. Follow HTTP/TCP Stream yang menunjukkan request+response **200 OK** berisi kredensial berhasil
-
-<img width="1600" height="836" alt="WhatsApp Image 2026-09-16 at 11 38 03" src="https://github.com/user-attachments/assets/1fea3e26-e71c-405c-a6ee-9e0b395a9c2e" />
-
-3. Packet Details dengan header `Server: Apache/2.4.62` ter-expand
-
-   <img width="1284" height="1014" alt="WhatsApp Image 2026-09-16 at 11 38 54" src="https://github.com/user-attachments/assets/84bdd04a-db48-47fa-bdea-32354c830f35" />
+<img width="779" height="426" alt="image" src="https://github.com/user-attachments/assets/fa8adaa2-c23d-40ba-a040-5bbe08f5cb88" />
 
    kredensial yang berhasil:
 
    <img width="1284" height="1014" alt="WhatsApp Image 2026-09-16 at 11 38 54 (1)" src="https://github.com/user-attachments/assets/765b9ea4-7107-4282-a0d3-2fa21a941027" />
 
-5. Packet List dengan filter `http.response.code == 401` menunjukkan banyaknya percobaan gagal
+ menunjukkan Web server & versi
+
 <img width="1002" height="619" alt="WhatsApp Image 2026-09-16 at 11 39 26" src="https://github.com/user-attachments/assets/591cdd1d-d2d0-44c6-98cd-57dcad720bc5" />
 
-###### Step selanjutnya — validasi ke socket server:
+**validasi ke socket server:**
 
-nc [IP_Group] 3401
+```
+nc 10.4.89.247 3401
+```
 
 Socket ini akan menanyakan beberapa field satu per satu (IP penyerang, IP:port target, password, versi server). Jalankan dulu, lalu muncul di layar prompt pertanyaannya.
 
@@ -1756,30 +1745,34 @@ Socket ini akan menanyakan beberapa field satu per satu (IP penyerang, IP:port t
 | **Web server & versi** | `Apache/2.4.62` |
 | **Info tambahan** | `X-Powered-By: PHP/8.3.14` |
 
-screenshot Bukti:
+**screenshot Bukti:**
 
-<img width="1002" height="619" alt="WhatsApp Image 2026-09-16 at 11 39 26" src="https://github.com/user-attachments/assets/32a6ad52-735d-442f-9128-ab95b203aee4" />
-<img width="1600" height="841" alt="WhatsApp Image 2026-09-16 at 13 01 10" src="https://github.com/user-attachments/assets/7248abb4-8607-4629-8b2a-4def7179dc70" />
+<img width="1146" height="1006" alt="WhatsApp Image 2026-09-16 at 11 49 50" src="https://github.com/user-attachments/assets/32f706ec-fa9a-431c-9c4b-ac8db813f36f" />
 
 ----
 soal 15
 
 Untuk menganalisis file capture `wired_usb_hid.pcap` ([link](https://drive.google.com/drive/folders/1oAPzN9IEN0264_LlvGnl_CsIiYh-Hp8w?usp=drive_link)) guna menemukan Vendor ID & Product ID perangkat USB, nomor device USB, serta pesan rahasia yang dicuri dari keystroke — lalu validasi temuan lewat `nc [IP_Group] 3402`.
 
-## Step 1 — Buka file di Wireshark
+**Buka file di Wireshark**
 
-1. Download file `soal15_wired_usb_hid.pcap` ke komputer kamu (kalau belum ada).
-2. Buka Wireshark → **File → Open** → pilih file itu.
+```
+File → Open → pilih wired_bruteforce.pcapng
+```
+Tunggu sampai semua paket termuat di Packet List Pane.
 
-Kamu akan lihat daftar paket USB — ini beda dari capture jaringan biasa (Ethernet), soalnya ini nyadap komunikasi antara komputer dan perangkat USB.
-
-## Step 2 — Cari Vendor ID & Product ID (deskriptor device)
+**Cari Vendor ID & Product ID (deskriptor device)**
 
 1. Di kolom filter Wireshark, ketik:
 ```
 usb.idVendor
 ```
 Tekan Enter. Ini akan nyaring cuma paket yang berisi deskriptor device (paket awal-awal biasanya, pas device pertama kali dikenali/enumerasi).
+
+**screenshot Bukti:**
+Vendor ID & Product ID (deskriptor device)
+
+<img width="1600" height="841" alt="WhatsApp Image 2026-09-16 at 13 01 10 (1)" src="https://github.com/user-attachments/assets/d1a2fb63-3f2d-4a0a-8f99-db6f4b827dd3" />
 
 2. Klik salah satu paket yang muncul di hasil filter.
 3. Di **Packet Details Pane** (panel tengah), cari dan expand baris:
@@ -1791,9 +1784,11 @@ USB Device Descriptor
 idVendor: Logitech, Inc. (0x046d)
 idProduct: ... (0xc31c)
 ```
-Ini persis jawaban VID dan PID-nya. Screenshot bagian ini.
+**screenshot Bukti:**
 
-## Step 3 — Cari nomor alamat device USB
+<img width="960" height="540" alt="image" src="https://github.com/user-attachments/assets/5f9b3560-b34a-4306-8e4d-0f33371c6d77" />
+
+**Cari nomor alamat device USB**
 
 1. Ganti filter jadi:
 ```
@@ -1805,17 +1800,25 @@ Device: 7
 ```
 3. Perhatikan: di awal-awal paket, device-nya masih `0` (device belum dikenali/di-assign alamat). Setelah proses **SET_ADDRESS** (bagian dari enumerasi USB), device-nya berubah jadi `7` — itu alamat resminya. Screenshot paket yang nunjukkin `Device: 7`.
 
-## Step 4 — Cari pesan rahasia dari keystroke
+**screenshot Bukti:**
 
-Ini bagian paling ribet karena harus dibaca manual satu-satu. Caranya:
+nomor alamat devise USB
+
+<img width="1600" height="834" alt="WhatsApp Image 2026-09-16 at 13 12 29" src="https://github.com/user-attachments/assets/68df50dc-e7ab-4077-9527-3053ac506dbe" />
+
+**Cari pesan rahasia dari keystroke**
+
+ harus dibaca manual satu-satu. Caranya:
 
 1. Ganti filter jadi:
 ```
 usb.transfer_type == 0x01
 ```
-Ini nyaring cuma **Interrupt Transfer** — jenis transfer yang dipakai keyboard buat ngirim tiap kali tombol ditekan/dilepas.
+Ini hanya menyaring **Interrupt Transfer** jenis transfer yang dipakai keyboard buat ngirim tiap kali tombol ditekan/dilepas.
 
-2. Kamu akan lihat banyak paket berpasang-pasangan: satu berisi data (pas tombol ditekan), satu lagi kosong/nol semua (pas tombol dilepas). **Fokus cuma ke yang datanya tidak nol.**
+2.akatn terlihat banyak paket berpasang-pasangan: 
+
+satu berisi data (pas tombol ditekan), satu lagi kosong/nol semua (pas tombol dilepas). **Fokus cuma ke yang datanya tidak nol.**
 
 3. Klik satu paket yang datanya tidak nol. Di Packet Details, expand bagian data USB (biasanya muncul sebagai **Leftover Capture Data** atau **HID Data**, tergantung versi Wireshark). Kamu akan lihat 8 byte, contoh:
 ```
@@ -1842,33 +1845,14 @@ Ini nyaring cuma **Interrupt Transfer** — jenis transfer yang dipakai keyboard
 | 0x0D | j | 0x18 | u | | |
 | 0x0E | k | 0x19 | v | | |
 
-Kalau byte modifier-nya `02` (Shift ditekan), hurufnya jadi **kapital** (atau simbol, misal `0x2D` + Shift = `_` bukan `-`).
+jika  byte modifier-nya `02` (Shift ditekan), hurufnya jadi **kapital** (atau simbol, misal `0x2D` + Shift = `_` bukan `-`).
 
 6. **Lakukan ini satu-satu buat SETIAP paket** yang datanya tidak nol, urut dari atas ke bawah sesuai waktu (kolom **Time** atau **No.**). Catat huruf per huruf.
 
-7. Kalau kamu urutkan semuanya, hasilnya bakal kebentuk kalimat: `Wired_Protocol_7_is_alive_2026`
+7. Kalau urutkan semuanya, hasilnya bakal kebentuk kalimat:
+   `Wired_Protocol_7_is_alive_2026`
 
-## Tips biar nggak pusing decode manual satu-satu
-
-Karena manual decode 30 paket capek, kamu bisa:
-- **Export dulu semua paket interrupt** ke file: klik kanan salah satu paket hasil filter → **Export Packet Bytes**, atau
-- Cukup screenshot tabel Packet List (dengan filter `usb.transfer_type == 0x01` aktif) dan Packet Details salah satu contoh paketnya sebagai bukti, lalu di laporan tulis hasil akhir yang sudah aku decode-in: `Wired_Protocol_7_is_alive_2026` — dengan menjelaskan metodenya (seperti Step 4 di atas) sebagai bukti kamu paham cara bacanya, tidak perlu screenshot literally 30 paket satu-satu.
-
-## Step 5 — Screenshot yang wajib buat laporan
-
-Cari Vendor ID & Product ID (deskriptor device)
-
-<img width="1600" height="834" alt="WhatsApp Image 2026-09-16 at 13 12 29" src="https://github.com/user-attachments/assets/68df50dc-e7ab-4077-9527-3053ac506dbe" />
-
-Paket **USB Device Descriptor** — expand, tunjukkan `idVendor` & `idProduct`
-
-   <img width="1600" height="834" alt="WhatsApp Image 2026-09-16 at 13 12 29" src="https://github.com/user-attachments/assets/488b0d47-d2f3-42bf-b926-90126bae3003" />
-   
-Paket yang tunjukkin **Device: 7** (device address setelah enumerasi)
-<img width="1600" height="839" alt="WhatsApp Image 2026-09-16 at 13 20 36" src="https://github.com/user-attachments/assets/3b591dd1-a54b-4505-b757-8b650ca9aa1b" />
-
-
-## Step 6 — Validasi ke socket server
+**Validasi ke socket server**
 
 ```
 nc 10.4.89.247 3402
