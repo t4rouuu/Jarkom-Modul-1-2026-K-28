@@ -1073,15 +1073,7 @@ Klik kedua paket ini, expand bagian *File Transfer Protocol (FTP)* di Packet Det
 
 Untuk mengirim ping dari node Knights ke node Chisa dengan payload 128 bytes, interval 0.3 detik, sebanyak 77 paket (ping -c 77 -s 128 -i 0.3 <IP_Chisa>), lalu menganalisis di Wireshark nilai ICMP Type/Code untuk Echo Request vs Echo Reply, serta packet loss dan RTT (min/avg/max).
 
-###### Mencari IP Chisa
-
-Di konsol Chisa:
-```
-ip -br a
-```
-Catat IP eth0-nya (misal `192.225.2.2`).
-
-###### menyalakan Wireshark
+**Nyalakan Wireshark**
 
 Sama seperti soal sebelumnya:
 1. Klik kanan kabel **Knights ↔ Switch3** di GNS3
@@ -1090,15 +1082,15 @@ Sama seperti soal sebelumnya:
    ```
    icmp
    ```
-###### Menjalankan ping dari Knights
+**Jalankan ping dari Knights**
 
-Di konsol Knights (ganti IP sesuai Chisa):
+Di konsol Knights:
 
 ```
 ping -c 77 -s 128 -i 0.3 192.225.2.2
 ```
 
-###### Hasil di terminal (packet loss & RTT)
+**Hasil di terminal (packet loss & RTT)**
 
 Cari 2 baris di bagian bawah output:
 
@@ -1107,16 +1099,17 @@ Cari 2 baris di bagian bawah output:
 77 packets transmitted, 77 received, 0% packet loss, time xxxx ms
 rtt min/avg/max/mdev = x.xxx/x.xxx/x.xxx/x.xxx ms
 ```
+
 - **Packet loss** → lihat persentase di baris pertama
+  
 - **RTT min/avg/max** → 3 angka pertama di baris kedua
 
-  ###### Bukti screenshot:
+#### Bukti screenshot:
 <img width="747" height="516" alt="WhatsApp Image 2026-09-15 at 15 08 38" src="https://github.com/user-attachments/assets/aed8adaf-dbe4-4f31-8448-866caf2991fc" />
 
-  Output terminal ping lengkap (command + statistik RTT & packet loss)
+Output terminal ping lengkap (command + statistik RTT & packet loss)
 
-
-###### ICMP Type & Code di Wireshark
+#### ICMP Type & Code di Wireshark
 
 Dengan filter `icmp` masih aktif, klik salah satu paket **Echo Request** (Knights → Chisa), expand bagian *Internet Control Message Protocol*, akan terlihat:
 
@@ -1124,6 +1117,12 @@ Dengan filter `icmp` masih aktif, klik salah satu paket **Echo Request** (Knight
 Type: 8 (Echo request)
 Code: 0
 ```
+
+#### Bukti screenshot:
+
+<img width="1600" height="899" alt="WhatsApp Image 2026-09-15 at 15 16 21 (2)" src="https://github.com/user-attachments/assets/d4c6a532-a4ce-45bb-a896-8c1268bdbfd4" />
+
+Paket Echo Request di Wireshark (Type: 8, Code: 0)
 
 Klik paket **balasannya** (Echo Reply, Chisa → Knights, biasanya baris berikutnya):
 
@@ -1136,13 +1135,13 @@ Code: 0
 | Request (Knights → Chisa) | 8 | 0 |
 | Reply (Chisa → Knights) | 0 | 0 |
 
- ###### Bukti screenshot:
+#### Bukti screenshot:
 
- <img width="1600" height="899" alt="WhatsApp Image 2026-09-15 at 15 16 21 (2)" src="https://github.com/user-attachments/assets/d4c6a532-a4ce-45bb-a896-8c1268bdbfd4" />
+#Masukkan ss
 
- Paket Echo Request di Wireshark (Type: 8, Code: 0)
+Paket Echo Replay di Wireshark (Type: 0, Code: 0)
 
-###### Hentikan & simpan capture
+**Hentikan & simpan capture**
 
 1. Klik kanan kabel yang sama di GNS3 → **Stop capture**
 2. Di Wireshark: **File → Save As**, simpan dengan nama jelas, misal:
