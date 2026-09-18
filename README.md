@@ -53,20 +53,7 @@ Tarik node ke workspace GNS3:
 - Switch2 → Router-Lain (di eth2), lalu Switch2 → Chisa
 - Switch3 → Router-Lain (di eth3), lalu Switch3 → Knights, dan Switch3 → Eiri
 
-###### Menyeting IP di tiap node
-
-Edit file `/etc/network/interfaces` di setiap node sesuai IP yang sudah ditentukan. Contoh settingan Router-Lain ada di Modul Fase 2, dan contoh settingan Client polanya sama seperti di modul bagian 2.7.2  tinggal disesuaikan IP dan interfacenya saja.
-
-###### Menguji coba
-Menyalakan semua node, lalu di tiap node ketik:
-
-```
-ip a
-```
-
-Hasil:
-
-###### Topologi
+###### Hasil Topologi:
 
 <img width="957" height="406" alt="image" src="https://github.com/user-attachments/assets/7d9b4ff3-df07-47a6-8a0a-ee98bc473473" />
 
