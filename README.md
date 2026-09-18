@@ -1627,8 +1627,8 @@ client:
  ```
      soal13-mika-ssh-knights.pcapng
 ```
----
 
+---
 ### soal 14
 
 Untuk menganalisis file capture `wired_bruteforce.pcapng` ([link](https://drive.google.com/drive/folders/1-MloxOyGauBYglc6TKTQ84VeILvJjjG2?usp=sharing)) guna menemukan IP penyerang, target IP & port yang diserang, password `lain_admin` yang berhasil ditembus, serta web server software & versinya — lalu validasi temuan lewat `nc [IP_Group] 3401`.
@@ -1636,7 +1636,7 @@ Untuk menganalisis file capture `wired_bruteforce.pcapng` ([link](https://drive.
 **Buka file capture di Wireshark**
 
 ```
-File → Open → pilih wired_bruteforce.pcapng
+File → Open → pilih wired_bruteforce.pcapng yang telah di unduh
 ```
 Tunggu sampai semua paket termuat di Packet List Pane.
 
@@ -1750,14 +1750,14 @@ Socket ini akan menanyakan beberapa field satu per satu (IP penyerang, IP:port t
 <img width="1146" height="1006" alt="WhatsApp Image 2026-09-16 at 11 49 50" src="https://github.com/user-attachments/assets/32f706ec-fa9a-431c-9c4b-ac8db813f36f" />
 
 ----
-soal 15
+### soal 15
 
 Untuk menganalisis file capture `wired_usb_hid.pcap` ([link](https://drive.google.com/drive/folders/1oAPzN9IEN0264_LlvGnl_CsIiYh-Hp8w?usp=drive_link)) guna menemukan Vendor ID & Product ID perangkat USB, nomor device USB, serta pesan rahasia yang dicuri dari keystroke — lalu validasi temuan lewat `nc [IP_Group] 3402`.
 
 **Buka file di Wireshark**
 
 ```
-File → Open → pilih wired_bruteforce.pcapng
+File → Open → pilih wired_bruteforce.pcapng yang telah di unduh
 ```
 Tunggu sampai semua paket termuat di Packet List Pane.
 
@@ -1876,14 +1876,14 @@ Screenshot Bukti:
 
 Untuk menganalisis file capture `wired_ftp_theft.pcap` ([link](https://drive.google.com/drive/folders/1qBeAXVx1MG14L0jzGefqs3t8qO8VRMmb?usp=sharing)) guna menemukan IP server FTP penyerang, banner software FTP, kredensial login penyerang, serta ukuran file malware `knights_payload.exe` — lalu validasi temuan lewat `nc [IP_Group] 3403`.
 
-Oke, aku uraikan pelan-pelan cara verifikasi manual di Wireshark buat soal 16 ini.
+**Buka file di Wireshark**
 
-## Step 1 — Buka file di Wireshark
+```
+File → Open → pilih wired_ftp_theft.pcap yang telah di unduh
+```
+Tunggu sampai semua paket termuat di Packet List Pane.
 
-1. Download file `soal16_wired_ftp_theft.pcapng` ke komputer kamu.
-2. Buka Wireshark → **File → Open** → pilih file tersebut.
-
-## Step 2 — Filter khusus paket FTP
+ **Filter khusus paket FTP**
 
 Di kolom filter (atas), ketik:
 ```
@@ -1891,7 +1891,9 @@ ftp
 ```
 Tekan Enter. Sekarang cuma paket-paket FTP control channel yang muncul (bukan FTP-data). Kamu akan lihat **beberapa sesi berbeda** tercampur — ini penting, karena capture-nya sengaja berisi FTP server legit (Chisa) **dan** FTP server jahat (Eiri) sekaligus. Kita perlu pisahkan mana yang mana.
 
-## Step 3 — Cari banner server yang mencurigakan
+<img width="959" height="498" alt="image" src="https://github.com/user-attachments/assets/d16ccee4-1df8-4375-bc88-1ab0c0781523" />
+
+**Cari banner server yang mencurigakan**
 
 1. Scroll dari atas, perhatikan kolom **Info**. Cari baris yang isinya semacam:
 ```
@@ -1910,9 +1912,12 @@ Ini adalah "salam pembuka" tiap kali ada yang connect ke server FTP.
 ```
 Response: 220 Welcome to Wired FTP Server (vsftpd 3.0.5)
 ```
-**Screenshot ini** — ini bukti IP server + banner software.
+**screenshot Bukti**
 
-## Step 4 — Cari kredensial login
+Banner: `220 Welcome to Wired FTP Server (vsftpd 3.0.5)` + IP source `198.51.100.7`
+<img width="1600" height="844" alt="WhatsApp Image 2026-09-16 at 13 56 30" src="https://github.com/user-attachments/assets/c8138198-b4ba-4759-91b1-fc7008f69d6e" />
+
+**Cari kredensial login**
 
 1. Masih dengan filter `ftp`, cari paket **setelah** banner tadi (urutan waktu/nomor paket lebih besar) dengan Info:
 ```
@@ -1924,7 +1929,11 @@ Klik paket ini, screenshot Packet Details-nya (expand FTP, lihat baris `Request 
 ```
 Request: PASS N4v1_s3cur3_2026
 ```
-Screenshot juga ini.
+**screenshot Bukti**
+
+`USER knights_agent` dan `PASS N4v1_s3cur3_2026`
+
+<img width="1438" height="1020" alt="WhatsApp Image 2026-09-16 at 14 04 54" src="https://github.com/user-attachments/assets/b5d7e47b-771f-405e-aa23-fc0d4620ba3a" />
 
 3. Pastikan setelah itu ada balasan sukses:
 ```
@@ -1932,17 +1941,30 @@ Response: 230 Login successful.
 ```
 Ini konfirmasi kredensial itu **valid** (beda dengan percobaan `guest`/`guest` sebelumnya yang dibalas `530 Login incorrect`).
 
-## Step 5 — Cari ukuran file malware
+**screenshot Bukti**
+
+`230 Login successful.`
+
+<img width="1600" height="839" alt="WhatsApp Image 2026-09-16 at 13 58 53" src="https://github.com/user-attachments/assets/2f83c57c-e20a-4a18-9e31-feffb1fcf90b" />
+
+**Cari ukuran file malware**
 
 1. Cari paket dengan Info:
 ```
 Request: SIZE knights_payload.exe
 ```
+**screenshot Bukti**
+<img width="959" height="509" alt="image" src="https://github.com/user-attachments/assets/691928ee-17f0-42b2-8c37-ac493b0b3935" />
+
 2. Paket **balasannya** (tepat setelahnya) punya Info:
 ```
 Response: 213 524288
 ```
 Angka `524288` itu ukuran file dalam **bytes** (kalau dikonversi = 512 KB). Screenshot kedua paket ini (request + response).
+
+**screenshot Bukti**
+
+<img width="958" height="503" alt="image" src="https://github.com/user-attachments/assets/58cd3b4b-f8b0-4ec5-83f6-0535adb674eb" />
 
 3. Sebagai bukti tambahan, cari juga paket:
 ```
@@ -1950,34 +1972,20 @@ Response: 150 Opening BINARY mode data connection for knights_payload.exe (52428
 ```
 Ini juga menyebutkan ukuran yang sama, jadi saling menguatkan.
 
-## Step 6 — Lihat seluruh percakapan sekaligus (biar lebih meyakinkan)
+**screenshot Bukti**
+
+<img width="959" height="512" alt="image" src="https://github.com/user-attachments/assets/9139554c-9d32-42ed-9e3d-c68bd7f4958c" />
+
+**Lihat seluruh percakapan sekaligus (biar lebih meyakinkan)**
 
 1. Klik kanan salah satu paket dari sesi `198.51.100.7` yang berhasil login tadi.
 2. Pilih **Follow → TCP Stream**.
-3. Jendela baru muncul menampilkan seluruh command-response FTP dalam satu tampilan teks — dari `USER knights_agent` sampai `226 Transfer complete.`. Screenshot ini sebagai bukti utama paling lengkap.
+3. Jendela baru muncul menampilkan seluruh command-response FTP dalam satu tampilan teks — dari `USER knights_agent` sampai `226 Transfer complete.`
 
-##  screenshot Bukti
+**screenshot Bukti**
+<img width="1438" height="1020" alt="WhatsApp Image 2026-09-16 at 14 04 54 (1)" src="https://github.com/user-attachments/assets/6d097cd4-1317-41c3-9706-a4cbe4476c75" />
 
-1. Banner: `220 Welcome to Wired FTP Server (vsftpd 3.0.5)` + IP source `198.51.100.7`
-   <img width="1600" height="844" alt="WhatsApp Image 2026-09-16 at 13 56 30" src="https://github.com/user-attachments/assets/c8138198-b4ba-4759-91b1-fc7008f69d6e" />
-
-3. `USER knights_agent` dan `PASS N4v1_s3cur3_2026`
-   <img width="1438" height="1020" alt="WhatsApp Image 2026-09-16 at 14 04 54" src="https://github.com/user-attachments/assets/b5d7e47b-771f-405e-aa23-fc0d4620ba3a" />
-
-5. `230 Login successful.`
-   <img width="1600" height="839" alt="WhatsApp Image 2026-09-16 at 13 58 53" src="https://github.com/user-attachments/assets/2f83c57c-e20a-4a18-9e31-feffb1fcf90b" />
-
-6. `SIZE knights_payload.exe` → `213 524288`
-   <img width="1600" height="846" alt="WhatsApp Image 2026-09-16 at 14 01 25" src="https://github.com/user-attachments/assets/9671c979-ecdd-48ba-8803-041507891fb2" />
-
-8. (Opsional tapi bagus) Follow TCP Stream keseluruhan sesi
-   <img width="1600" height="841" alt="WhatsApp Image 2026-09-16 at 14 01 46" src="https://github.com/user-attachments/assets/7dc239be-2f30-4581-809b-7ea19fee7b09" />
-
-## Step 8 — Simpan bukti
-
-Kalau ini file yang dikasih soal (bukan hasil capture kamu sendiri), tidak perlu di-save ulang — cukup screenshot-screenshot di atas dilampirkan ke laporan.
-
-## Step 9 — Validasi ke socket server
+**Validasi ke socket server**
 
 Sekarang coba jalankan:
 ```
@@ -2002,14 +2010,15 @@ Screenshot Bukti:
 
 Untuk menganalisis file capture `wired_http_c2.pcap` ([link](https://drive.google.com/drive/folders/1iPYESj5AN-uXYXfD2Wo2cRrm_Rigr_D6?usp=sharing)) guna menemukan domain (Host) sumber malware, IP server penyerang, nama file executable malware, serta kode status HTTP — lalu validasi temuan lewat `nc [IP_Group] 3404`.
 
-## Bagian A — Buka & analisis di Wireshark
+**Buka file di Wireshark**
 
-### Step 1 — Buka file
-1. Buka aplikasi **Wireshark** di komputer kamu.
-2. Klik **File** → **Open**.
-3. Cari file `soal17_wired_http_c2__1_.pcapng` (atau nama file yang kamu punya), klik **Open**.
+```
+File → Open → pilih wired_http_c2.pcap yang telah di unduh
+```
+Tunggu sampai semua paket termuat di Packet List Pane.
+.
 
-### Step 2 — Filter cuma paket HTTP
+**Filter cuma paket HTTP**
 1. Klik kolom putih panjang di bagian atas (kolom filter).
 2. Ketik:
 ```
@@ -2018,7 +2027,13 @@ http
 3. Tekan **Enter**.
 4. Sekarang tabel di atas cuma menampilkan beberapa baris (bukan ratusan) — ini paket-paket HTTP.
 
-### Step 3 — Cari request yang mencurigakan
+**Screenshot Bukti:**
+
+ip server penyerang
+
+<img width="1600" height="891" alt="WhatsApp Image 2026-09-16 at 16 06 31" src="https://github.com/user-attachments/assets/21169ff0-561e-4f5a-9d03-488b35a3c45b" />
+
+**Cari request yang mencurigakan**
 1. Lihat kolom **Info** di tiap baris tabel.
 2. Kamu akan lihat beberapa baris berbeda (beberapa Host berbeda). Cari baris yang tulisannya:
 ```
@@ -2026,11 +2041,17 @@ GET /navi_agent.exe HTTP/1.1
 ```
 3. **Klik sekali** di baris itu (klik di area barisnya, nanti jadi biru/ke-highlight).
 
-### Step 4 — Catat IP server
+**Screenshot Bukti:**
+
+hasil GET /navi_agent.exe HTTP/1.1
+
+<img width="1600" height="891" alt="WhatsApp Image 2026-09-16 at 16 06 31" src="https://github.com/user-attachments/assets/21169ff0-561e-4f5a-9d03-488b35a3c45b" />
+
+**Catat IP server**
 1. Masih di baris yang sama, lihat kolom **Destination** — itu IP server penyerangnya.
 2. Akan tertulis: `203.0.113.42`
 
-### Step 5 — Cari respons dari server
+**Cari respons dari server**
 1. Di tabel yang sama, cari baris **setelahnya** (nomor lebih besar) yang Info-nya:
 ```
 HTTP/1.1 200 OK
@@ -2038,7 +2059,11 @@ HTTP/1.1 200 OK
 dan sumbernya (**Source**) dari `203.0.113.42`.
 2. **Klik sekali** di baris itu.
 
-### Step 6 — Buka detail di panel tengah
+**Screenshot Bukti:**
+
+<img width="953" height="502" alt="image" src="https://github.com/user-attachments/assets/d2360b47-eb0a-454e-a7dd-5c87d5b8ffcc" />
+
+**Step 6 — Buka detail di panel tengah**
 1. Setelah baris response itu di-klik, lihat ke **panel tengah** (Packet Details Pane) — ada beberapa baris dengan tanda panah `>` di kiri.
 2. Cari baris **"Hypertext Transfer Protocol"**.
 3. Klik tanda panah `>` di sebelah kirinya biar terbuka (expand).
@@ -2053,10 +2078,6 @@ Content-Disposition: attachment; filename="navi_agent.exe"
 
 **Screenshot Bukti:**
 
-ip server penyerang
-
-<img width="1600" height="891" alt="WhatsApp Image 2026-09-16 at 16 06 31" src="https://github.com/user-attachments/assets/21169ff0-561e-4f5a-9d03-488b35a3c45b" />
-
 nama file malware
 
 <img width="1600" height="899" alt="WhatsApp Image 2026-09-16 at 16 08 34" src="https://github.com/user-attachments/assets/d17f059a-7c5e-45bd-af11-8262e2a99676" />
@@ -2065,20 +2086,20 @@ bukti status code http
 
 <img width="1600" height="899" alt="WhatsApp Image 2026-09-16 at 16 12 25" src="https://github.com/user-attachments/assets/b6c1a757-3ed8-4c0d-bb6e-63498de1ae26" />
 
+**Lihat percakapan lengkap**
+1. Klik kanan (klik tombol kanan mouse) pada baris `GET /navi_agent.exe` tadi.
+2. Arahkan ke **Follow** → klik **HTTP Stream**.
+3. Jendela baru muncul, tunjukkan seluruh request+response jadi satu teks.
+   
+**Screenshot Bukti:**
+
 percakapan request client dan server
 
 <img width="1288" height="1079" alt="WhatsApp Image 2026-09-16 at 16 14 50" src="https://github.com/user-attachments/assets/6d7c0775-ede8-490c-8196-a7ad64e0b6a2" />
 
 <img width="1600" height="899" alt="WhatsApp Image 2026-09-16 at 16 18 50" src="https://github.com/user-attachments/assets/136bf5e9-c445-421a-8c36-3eedfdec12c9" />
 
-### Step 7 — Lihat percakapan lengkap (opsional tapi bagus)
-1. Klik kanan (klik tombol kanan mouse) pada baris `GET /navi_agent.exe` tadi.
-2. Arahkan ke **Follow** → klik **HTTP Stream**.
-3. Jendela baru muncul, tunjukkan seluruh request+response jadi satu teks. **Screenshot ini juga.**
-
-## Validasi ke socket server
-
-### Step 9 — Jalankan
+**Validasi ke socket server**
 
 Sekarang coba jalankan:
 ```
