@@ -29,16 +29,14 @@
 - [Soal 19 — Analisis SMTP Threat](#soal-19)
 - [Soal 20 — Analisis Traffic TLS](#soal-20)
  
-  ---
+---
 ### soal 1
 
 Untuk mempersiapkan pembangunan The Wired, kita membangun topologi jaringan The Wired di GNS3, dengan Router Lain sebagai pusat yang terhubung ke tiga Switch: Switch 1 (menuju Alice & Mika), Switch 2 (menuju Chisa), dan Switch 3 (menuju Knights & Eiri) di mana kelima entitas tersebut dikonfigurasi sebagai Client, menggunakan prefix IP sesuai kelompok masing-masing.
 
-##### Bangun Topologi:
-
 ###### Menyiapkan nodenya
 
-Tarik ke workspace GNS3:
+Tarik node ke workspace GNS3:
 - 1 Router (kasih 4 adapter/interface)
 - 1 NAT node
 - 3 Switch (Ethernet switch)
