@@ -127,7 +127,7 @@ Hasil:
 iface eth0 inet static
     address 192.225.2.2
     netmask 255.255.255.0
-    gateway 192.225.1.1
+    gateway 192.225.2.1
 ```
 Hasil:
 
@@ -139,7 +139,7 @@ Hasil:
 iface eth0 inet static
     address 192.225.3.2
     netmask 255.255.255.0
-    gateway 192.225.1.1
+    gateway 192.225.3.1
 ```
 Hasil:
 
@@ -151,7 +151,7 @@ Hasil:
 iface eth0 inet static
     address 192.225.3.3
     netmask 255.255.255.0
-    gateway 192.225.1.1
+    gateway 192.225.3.1
 ```
 Hasil:
 
