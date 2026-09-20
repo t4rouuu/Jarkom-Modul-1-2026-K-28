@@ -96,6 +96,29 @@ dengan Menyalakan semua node, lalu di tiap node ketikan:
 ip a
 ```
 
+**Tes koneksi internet**
+
+Di konsol Router-Lain, ketikan:
+
+```
+ping -c 3 8.8.8.8
+```
+
+**hasilnya seperti ini:**
+
+<img width="959" height="404" alt="image" src="https://github.com/user-attachments/assets/7b3fb622-0cb6-49cd-acf0-93d89362f668" />
+
+```
+3 packets transmitted, 3 received, 0% packet loss
+```
+
+➡️ Berarti Router-Lain **sudah berhasil online** dan siap jadi pintu keluar untuk semua Client di bawahnya. jika gagal (`Destination unreachable` atau `100% packet loss`), kemungkinan masalah di NAT node atau eth0 belum dapat IP cek dengan `ip a` di eth0 dulu.
+
+---
+### soal 3
+
+Untuk memastikan seluruh Entitas (Client) di bawah Switch 1, Switch 2, dan Switch 3 dapat saling terhubung dan berkomunikasi satu sama lain, dengan mengkonfigurasi routing pada Router Lain setelah router tersebut terhubung ke internet.
+
 #### Alice
 
 ```
@@ -161,28 +184,6 @@ Hasil:
 
 <img width="959" height="234" alt="image" src="https://github.com/user-attachments/assets/1f7372be-50cd-4b09-aca5-483fe6d3466a" />
 
-**Tes koneksi internet**
-
-Di konsol Router-Lain, ketikan:
-
-```
-ping -c 3 8.8.8.8
-```
-
-**hasilnya seperti ini:**
-
-<img width="959" height="404" alt="image" src="https://github.com/user-attachments/assets/7b3fb622-0cb6-49cd-acf0-93d89362f668" />
-
-```
-3 packets transmitted, 3 received, 0% packet loss
-```
-
-➡️ Berarti Router-Lain **sudah berhasil online** dan siap jadi pintu keluar untuk semua Client di bawahnya. jika gagal (`Destination unreachable` atau `100% packet loss`), kemungkinan masalah di NAT node atau eth0 belum dapat IP cek dengan `ip a` di eth0 dulu.
-
----
-### soal 3
-
-Untuk memastikan seluruh Entitas (Client) di bawah Switch 1, Switch 2, dan Switch 3 dapat saling terhubung dan berkomunikasi satu sama lain, dengan mengkonfigurasi routing pada Router Lain setelah router tersebut terhubung ke internet.
 
 **Aktifkan IP forwarding**
 
