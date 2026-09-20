@@ -1,0 +1,1 @@
+#!/bin/sh # Buat user mika_admin id mika_admin >/dev/null 2>&1 || adduser -D mika_admin # Buat folder SSH mkdir -p /home/mika_admin/.ssh chmod 700 /home/mika_admin/.ssh # Generate SSH Key if [ ! -f /home/mika_admin/.ssh/id_ed25519 ]; then ssh-keygen -t ed25519 -N "" \ -f /home/mika_admin/.ssh/id_ed25519 fi echo "=== Public Key Mika ===" cat /home/mika_admin/.ssh/id_ed25519.pub
