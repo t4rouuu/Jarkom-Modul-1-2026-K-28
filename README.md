@@ -1429,132 +1429,147 @@ soal12-alice-scan-knights.pcapng
 ### soal 13
 
 Menyuruh kita untuk menginstall OpenSSH di node Knights, membuat SSH key (ssh-keygen) di node Mika untuk user mika_admin, mengatur PasswordAuthentication no, lalu melakukan koneksi SSH dari Mika ke Knights, menangkap sesi dengan Wireshark, mengidentifikasi paket Protocol Version Exchange & Key Exchange, serta menjelaskan mengapa kredensial tidak terlihat plain text seperti di Telnet.
+Oke, aku pakai IP yang sesuai topologi kamu: **Mika = 192.225.1.3**, **Knights = 192.225.3.2**, image Alpine (`alpinet`). Ini step-by-step lengkap dari nol, khusus Alpine.
+
+## Konsep dulu
+
+- **Knights** = jadi SSH **server**
+- **Mika** = jadi SSH **client**, bikin sepasang kunci (private + public)
+- Public key milik Mika ditaruh di Knights, biar Mika bisa login tanpa password
+- Terakhir matikan login pakai password di Knights
+
+---
 
 **Install OpenSSH server di Knights**
 
-Masuk ke Console Knights lalu Cek dulu OSnya:
-```
-cat /etc/os-release
-```
+Buka konsol **Knights**:
 ```
 apk update
 apk add openssh
 ssh-keygen -A
 ```
-
 **Buat user mika_admin di Knights**
+
 ```
-adduser -D mika_admin          # Alpine
-useradd -m -s /bin/bash mika_admin   # Debian
+adduser -D mika_admin
 ```
 Set password sementara dulu (nanti dimatikan setelah key jalan):
 ```
 passwd mika_admin
 ```
+Isi password apa saja, misal `sementara123` (2x ketik buat konfirmasi).
 
 **Jalankan SSH server di Knights**
+
 ```
 /usr/sbin/sshd
 ```
-Cek jalan:
+
+Cek sudah jalan:
 ```
 netstat -tulnp | grep :22
 ```
+Kalau `netstat` tidak ada:
+```
+apk add net-tools
+```
+lalu ulangi cek di atas. Harus muncul baris dengan `0.0.0.0:22` status `LISTEN`.
 
-**Generate SSH key pair di Console Mika**
+**Install SSH client di Mika**
 
-Cek `ssh-keygen` ada:
+Buka konsol **Mika**:
 ```
-which ssh-keygen
+apk update
+apk add openssh-client
 ```
-Kalau belum ada:
+
+**Generate key pair di Mika**
+
 ```
-apk add openssh-client    # Alpine
-```
-Generate key pair:
-```
+mkdir -p /root/.ssh
 ssh-keygen -t rsa -b 2048 -f /root/.ssh/id_rsa -N ""
 ```
-**Penjelasan opsi:**
-- `-t rsa -b 2048` → jenis dan panjang key
-- `-f` → lokasi file key disimpan
-- `-N ""` → tanpa passphrase (biar benar-benar tanpa password)
+
+Penjelasan:
+- `-f /root/.ssh/id_rsa` = nama & lokasi file key
+- `-N ""` = tanpa passphrase (supaya beneran "tanpa password" sesuai soal)
 
 Cek hasilnya:
 ```
 ls -la /root/.ssh/
 ```
-Harus muncul 2 file: `id_rsa` (private, jangan pernah dikirim ke mana pun) dan `id_rsa.pub` (public, boleh disebar).
+Harus ada 2 file: `id_rsa` (privat, rahasia) dan `id_rsa.pub` (publik, boleh disebar).
 
-**Salin public key dari Mika ke Knights**
+**Salin public key Mika ke Knights**
 
-Di Mika, tampilkan isi public key:
+Di **Mika**, tampilkan isi public key:
 ```
 cat /root/.ssh/id_rsa.pub
 ```
-Copy seluruh baris output ini (mulai `ssh-rsa AAAA...` sampai akhir).
+**Blok dan copy seluruh baris** yang muncul (dari `ssh-rsa AAAA...` sampai akhir, biasanya diakhiri `root@...`).
 
-```
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCzqRx9O2ZkS2XLwpJ9ghRmCYZG4B0lZv/geAkDUT7cuULGlnG5IOE5igPT1ESCqcmUmY+dv3AKS+YjKN7xUk3JdXkwGkbhyCn2PWQ7uLOgtwW3rWD8jUKc1RqzzdAwXS8KYDTsH0U36ewhTUndFzNgu2tciNBKibMfqW4ShHlUM3iMuY0415S5W8jKND/fn/7or6tPHTSYzrjrqH/bKrP1zu4sw7+3FplcIhsEGex4eT7MVzsYl/uNfftk7NdUmcWu6f7s0aIKilVB0hlwOYjwD+2r2h1zZtXW6e0O5UPvPea7VAE5d12qKX43ZjuheKBRqlGnnjfJ3BAtP9WN5V6D
-```
-
-Balik ke Knights, buat folder `.ssh` untuk `mika_admin`:
+Pindah ke **Knights**, buat folder `.ssh` untuk `mika_admin`:
 ```
 mkdir -p /home/mika_admin/.ssh
 nano /home/mika_admin/.ssh/authorized_keys
 ```
-Paste public key tadi, simpan (`Ctrl+O`, Enter, `Ctrl+X`).
-
-Set permission yang benar (SSH ketat soal ini — kalau salah, login ditolak):
+```
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCzqRx9O2ZkS2XLwpJ9ghRmCYZG4B0lZv/geAkDUT7cuULGlnG5IOE5igPT1ESCqcmUmY+dv3AKS+YjKN7xUk3JdXkwGkbhyCn2PWQ7uLOgtwW3rWD8jUKc1RqzzdAwXS8KYDTsH0U36ewhTUndFzNgu2tciNBKibMfqW4ShHlUM3iMuY0415S5W8jKND/fn/7or6tPHTSYzrjrqH/bKrP1zu4sw7+3FplcIhsEGex4eT7MVzsYl/uNfftk7NdUmcWu6f7s0aIKilVB0hlwOYjwD+2r2h1zZtXW6e0O5UPvPea7VAE5d12qKX43ZjuheKBRqlGnnjfJ3BAtP9WN5V6D root@Mika
+```
+Set permission yang benar (SSH strict soal ini):
 ```
 chmod 700 /home/mika_admin/.ssh
 chmod 600 /home/mika_admin/.ssh/authorized_keys
 chown -R mika_admin:mika_admin /home/mika_admin/.ssh
 ```
 
-**Tes login pakai key (sebelum matikan password)**
+**Test login pakai key (sebelum matikan password)**
 
-Dari Mika:
+Dari **Mika**:
 ```
-ssh -i /root/.ssh/id_rsa mika_admin@[IP_KNIGHTS]
+ssh -i /root/.ssh/id_rsa mika_admin@192.225.3.2
 ```
-Kalau berhasil masuk **tanpa diminta password** (atau cuma diminta konfirmasi fingerprint pertama kali, ketik `yes`), berarti key authentication sudah jalan. Keluar:
+
+- Pertama kali connect, akan muncul pertanyaan "Are you sure you want to continue connecting (yes/no)?" → ketik `yes`
+- Kalau langsung masuk **tanpa diminta password** → key authentication sudah jalan! Keluar dulu:
 ```
 exit
 ```
+- Kalau masih diminta password → kemungkinan permission folder `.ssh` di Knights salah, atau isi `authorized_keys` ke-copy tidak lengkap. Kirim ke aku pesannya biar dicek.
+
 **Matikan password authentication di Knights**
 
-Edit config SSH:
+Balik ke **Knights**:
 ```
 nano /etc/ssh/sshd_config
 ```
-Cari/ubah baris:
+Cari baris `PasswordAuthentication`. Kalau ada tapi masih `yes` atau ada tanda `#` di depan, ubah jadi:
 ```
 PasswordAuthentication no
 PubkeyAuthentication yes
 ```
-Simpan, lalu restart SSH:
+Restart SSH server biar config baru kepakai:
 ```
 pkill sshd
 /usr/sbin/sshd
 ```
 
-**Nyalakan Wireshark**
+**Nyalakan Wireshark capture**
 
-1. Klik kanan kabel **Mika ↔ Switch1** di GNS3
-2. **Start capture** → centang visualisasi → OK
-3. Filter:
-   ```
-   ssh
-   ```
-
-**Login SSH lagi (buat direkam Wireshark)**
-
-Dari Mika:
+1. Di topologi GNS3, klik kanan kabel yang menghubungkan **Mika ↔ Switch1** (atau link Knights).
+2. **Start capture** → centang **Start the capture visualization program** → **OK**.
+3. Filter di Wireshark:
 ```
-ssh -i /root/.ssh/id_rsa mika_admin@[IP_KNIGHTS]
+ssh
 ```
-Jalankan perintah simpel:
+
+**Login SSH lagi dari Mika (buat direkam)**
+
+Dari **Mika**:
+```
+ssh -i /root/.ssh/id_rsa mika_admin@192.225.3.2
+```
+Setelah masuk, ketik:
 ```
 whoami
 ```
@@ -1565,20 +1580,11 @@ exit
 
 **Baca hasil di Wireshark**
 
-Dengan filter `ssh` aktif, cari 3 tahap:
+Dengan filter `ssh` aktif, kamu akan lihat urutan paket:
 
-**A. Protocol Version Exchange**
-2 paket paling awal (Mika ↔ Knights). Expand **SSH Protocol** di Packet Details:
-```
-SSH Version 2 (banner) exchange
-```
-Isinya string seperti `SSH-2.0-OpenSSH_9.x` — ini **satu-satunya bagian yang masih plaintext**, cuma info versi software, bukan kredensial.
-
-**B. Key Exchange (KEX)**
-Cari paket dengan info `Key Exchange Init` dan `Elliptic Curve Diffie-Hellman Key Exchange` — ini proses negosiasi algoritma enkripsi.
-
-**C. Setelah KEX — semua terenkripsi**
-Paket berikutnya (termasuk proses autentikasi dan perintah `whoami`) akan muncul sebagai **"Encrypted Packet"** — klik salah satu, isinya cuma random bytes tidak terbaca.
+1. **Protocol Version Exchange** — paket paling awal, isinya string `SSH-2.0-OpenSSH_x.x`. Klik salah satunya, expand **SSH Protocol** di Packet Details.
+2. **Key Exchange Init** — beberapa paket setelahnya, Info-nya `Client: Key Exchange Init` dan `Server: Key Exchange Init`.
+3. **Encrypted Packet** — semua paket setelah KEX (termasuk proses autentikasi dan perintah `whoami`) — klik salah satu, isinya cuma bytes acak tidak terbaca.
 
 ###### Analisis untuk laporan
 
